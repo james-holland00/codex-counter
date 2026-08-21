@@ -25,7 +25,7 @@
         } catch { document.documentElement.dataset.theme = "light"; }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=10" />
+    <link rel="stylesheet" href="styles.css?v=11" />
     <title>Counted — Blackjack Trainer</title>
   </head>
   <body>
@@ -39,6 +39,7 @@
         <nav class="desktop-nav" aria-label="Main navigation">
           <button data-nav="learn">Learn</button>
           <button class="active" data-nav="practice">Practice</button>
+          <button data-nav="flash">Flash</button>
           <button data-nav="casino">Casino</button>
           <button data-nav="progress">Progress</button>
         </nav>
@@ -210,6 +211,81 @@
           </div>
         </section>
 
+        <section class="view flash-view" id="flash-view" data-view="flash" hidden>
+          <div class="flash-heading">
+            <div>
+              <p class="eyebrow">True count sprint</p>
+              <h1>Rapid flash.</h1>
+              <p>Keep the running count as cards fly, estimate the decks remaining, then call the true count at three checkpoints.</p>
+            </div>
+            <div class="flash-setup">
+              <div>
+                <label>Flash speed</label>
+                <div class="flash-speed" role="group" aria-label="Card flash speed">
+                  <button data-flash-speed="1200">Focus</button>
+                  <button class="active" data-flash-speed="750">Table</button>
+                  <button data-flash-speed="450">Fast</button>
+                  <button data-flash-speed="250">Expert</button>
+                </div>
+              </div>
+              <div>
+                <label for="flash-decks">Starting decks</label>
+                <select id="flash-decks" aria-label="Starting decks remaining">
+                  <option value="1">1 deck</option>
+                  <option value="2" selected>2 decks</option>
+                  <option value="4">4 decks</option>
+                  <option value="6">6 decks</option>
+                </select>
+              </div>
+              <button class="flash-start-button" id="flash-start"><span>Start sprint</span><b>→</b></button>
+            </div>
+          </div>
+
+          <div class="flash-shell">
+            <div class="flash-topbar">
+              <div class="flash-live"><i></i><span id="flash-status">Ready to flash</span></div>
+              <div class="flash-stats">
+                <span><small>Card</small><strong><b id="flash-card-number">0</b>/30</strong></span>
+                <span><small>Decks left</small><strong id="flash-decks-left">2</strong></span>
+                <span><small>Checks</small><strong><b id="flash-score">0</b>/3</strong></span>
+              </div>
+              <button class="flash-pause" id="flash-pause" disabled><span>Ⅱ</span> Pause</button>
+            </div>
+
+            <div class="flash-stage">
+              <div class="flash-ring" aria-hidden="true"></div>
+              <div class="flash-card-wrap" aria-live="polite">
+                <article class="flash-card face-down" id="flash-card">
+                  <div class="flash-card-corner top"><strong id="flash-rank-top">A</strong><span id="flash-suit-top">♠</span></div>
+                  <div class="flash-card-suit" id="flash-card-suit">♠</div>
+                  <div class="flash-card-corner bottom"><strong id="flash-rank-bottom">A</strong><span id="flash-suit-bottom">♠</span></div>
+                </article>
+              </div>
+
+              <div class="flash-progress" aria-label="Sprint progress"><span id="flash-progress-bar"></span></div>
+
+              <div class="flash-paused-overlay" id="flash-paused-overlay" hidden>
+                <span>Ⅱ</span><strong>Sprint paused</strong><small>Your count is safe.</small>
+              </div>
+
+              <form class="flash-count-prompt" id="flash-count-prompt" hidden>
+                <p class="eyebrow">True count check</p>
+                <h2>What’s the true count?</h2>
+                <p><strong id="flash-prompt-decks">2</strong> decks remain. Round toward zero.</p>
+                <div class="count-stepper">
+                  <button type="button" id="flash-minus" aria-label="Decrease true count">−</button>
+                  <input id="flash-count-input" type="number" value="0" min="-30" max="30" inputmode="numeric" aria-label="True count" />
+                  <button type="button" id="flash-plus" aria-label="Increase true count">+</button>
+                </div>
+                <button class="flash-submit" type="submit">Lock in true count</button>
+                <div class="flash-prompt-feedback" id="flash-prompt-feedback" role="status"></div>
+              </form>
+            </div>
+          </div>
+
+          <div class="flash-note"><span>30 cards · 3 checkpoints</span> Start at Focus speed, then step up only when you can hold both the running count and deck estimate.</div>
+        </section>
+
         <section class="view casino-view" id="casino-view" data-view="casino" hidden>
           <div class="casino-heading">
             <div>
@@ -311,6 +387,7 @@
       <nav class="mobile-nav" aria-label="Mobile navigation">
         <button data-nav="learn"><span aria-hidden="true">◇</span>Learn</button>
         <button class="active" data-nav="practice"><span aria-hidden="true">♠</span>Practice</button>
+        <button data-nav="flash"><span aria-hidden="true">⚡</span>Flash</button>
         <button data-nav="casino"><span aria-hidden="true">◆</span>Casino</button>
         <button data-nav="progress"><span aria-hidden="true">↗</span>Progress</button>
       </nav>
@@ -334,6 +411,15 @@
       <div class="dialog-actions"><button class="secondary-button" id="casino-leave">Leave table</button><button class="primary-button" id="casino-again">New shoe <span>↻</span></button></div>
     </dialog>
 
+    <dialog id="flash-result-dialog">
+      <div class="dialog-symbol">⚡</div>
+      <p class="eyebrow">Sprint complete</p>
+      <h2 id="flash-result-title">Count held.</h2>
+      <p id="flash-result-copy">You converted the running count at speed.</p>
+      <div class="dialog-stats"><span><small>True count accuracy</small><strong id="flash-result-accuracy">0%</strong></span><span><small>Final running count</small><strong id="flash-result-count">0</strong></span></div>
+      <div class="dialog-actions"><button class="secondary-button" id="flash-leave">Back to practice</button><button class="primary-button" id="flash-again">Sprint again <span>↻</span></button></div>
+    </dialog>
+
     <dialog class="install-dialog" id="install-dialog">
       <img src="assets/apple-touch-icon.png" width="76" height="76" alt="Counted app icon" />
       <p class="eyebrow">Install Counted</p>
@@ -350,6 +436,6 @@
 
     <div class="app-toast" id="app-toast" role="status" hidden><span id="app-toast-copy">Ready offline.</span><button id="app-toast-close" aria-label="Dismiss">×</button></div>
 
-    <script src="app.js?v=10" defer></script>
+    <script src="app.js?v=11" defer></script>
   </body>
 </html>

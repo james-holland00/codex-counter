@@ -18,6 +18,7 @@ Then open [http://localhost:4173](http://localhost:4173).
 - Multi-deck basic-strategy charts for hard totals, soft totals, and pairs
 - 20, 40, and 52-card practice sessions
 - Timed Casino Mode with four running-count checkpoints
+- Rapid Flash true-count sprints with four speeds and adjustable shoe depth
 - Mouse, touch, and keyboard input
 - Live accuracy, answer streak, and running count
 - Locally stored session history and card-group mastery

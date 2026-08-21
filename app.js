@@ -65,6 +65,8 @@ const defaultProgress = {
   groups: { low: [0, 0], neutral: [0, 0], high: [0, 0] },
   sessions: [],
   practiceDates: [],
+  flashSessions: 0,
+  flashBestAccuracy: 0,
 };
 
 let progress = loadProgress();
@@ -95,6 +97,18 @@ let trueCountTimer = null;
 let deferredInstallPrompt = null;
 let appToastTimer = null;
 let screenWakeLock = null;
+let flashDeck = [];
+let flashIndex = 0;
+let flashRunningCount = 0;
+let flashCheckpoints = 0;
+let flashCorrect = 0;
+let flashSpeed = 750;
+let flashStartingDecks = 2;
+let flashTimer = null;
+let flashPlaying = false;
+let flashPaused = false;
+let flashAwaitingCount = false;
+let flashSubmitting = false;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -185,7 +199,8 @@ function openInstallDialog() {
 }
 
 async function requestScreenWakeLock() {
-  if (!("wakeLock" in navigator) || document.visibilityState !== "visible" || !casinoPlaying || casinoPaused) return;
+  const activeTraining = (casinoPlaying && !casinoPaused) || (flashPlaying && !flashPaused);
+  if (!("wakeLock" in navigator) || document.visibilityState !== "visible" || !activeTraining) return;
   try {
     screenWakeLock = await navigator.wakeLock.request("screen");
     screenWakeLock.addEventListener("release", () => { screenWakeLock = null; });
@@ -238,6 +253,15 @@ function makeCasinoDeck() {
     [cards[i], cards[j]] = [cards[j], cards[i]];
   }
   return cards.slice(0, 20);
+}
+
+function makeFlashDeck() {
+  const cards = Array.from({ length: flashStartingDecks }, () => suits.flatMap((suit) => ranks.map((rank) => ({ rank, suit })))).flat();
+  for (let i = cards.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  return cards.slice(0, 30);
 }
 
 function signedCount(value) {
@@ -410,6 +434,183 @@ function submitCasinoCount(event) {
   }, 900);
 }
 
+function getFlashDecksRemaining() {
+  const cardsRemaining = Math.max(1, (flashStartingDecks * 52) - flashIndex);
+  return Math.max(.5, Math.round(cardsRemaining / 26) / 2);
+}
+
+function getFlashTrueCount() {
+  return Math.trunc(flashRunningCount / getFlashDecksRemaining());
+}
+
+function updateFlashUI() {
+  $("#flash-card-number").textContent = flashIndex;
+  $("#flash-decks-left").textContent = getFlashDecksRemaining();
+  $("#flash-score").textContent = flashCorrect;
+  $("#flash-progress-bar").style.width = `${(flashIndex / 30) * 100}%`;
+}
+
+function setFlashControlsDisabled(disabled) {
+  ["#flash-minus", "#flash-plus", "#flash-count-input", ".flash-submit"].forEach((selector) => {
+    $(selector).disabled = disabled;
+  });
+}
+
+function scheduleFlashCard(delay = flashSpeed) {
+  window.clearTimeout(flashTimer);
+  if (!flashPlaying || flashPaused || flashAwaitingCount) return;
+  flashTimer = window.setTimeout(dealFlashCard, delay);
+}
+
+function renderFlashCard(card) {
+  [$("#flash-rank-top"), $("#flash-rank-bottom")].forEach((el) => { el.textContent = card.rank; });
+  [$("#flash-suit-top"), $("#flash-suit-bottom"), $("#flash-card-suit")].forEach((el) => { el.textContent = card.suit; });
+  const cardElement = $("#flash-card");
+  cardElement.classList.remove("face-down", "flash-in");
+  cardElement.classList.toggle("red", card.suit === "♥" || card.suit === "♦");
+  void cardElement.offsetWidth;
+  cardElement.classList.add("flash-in");
+}
+
+function showFlashCountPrompt() {
+  if (!flashPlaying || !flashAwaitingCount) return;
+  $("#flash-count-input").value = "0";
+  $("#flash-prompt-decks").textContent = getFlashDecksRemaining();
+  $("#flash-prompt-feedback").textContent = "";
+  $("#flash-prompt-feedback").classList.remove("wrong");
+  setFlashControlsDisabled(false);
+  $("#flash-count-prompt").hidden = false;
+  $("#flash-count-input").focus();
+  $("#flash-count-input").select();
+}
+
+function dealFlashCard() {
+  if (!flashPlaying || flashPaused || flashAwaitingCount) return;
+  const card = flashDeck[flashIndex];
+  if (!card) return;
+
+  flashRunningCount += getValue(card.rank);
+  renderFlashCard(card);
+  flashIndex += 1;
+  updateFlashUI();
+
+  if (flashIndex % 10 === 0) {
+    flashAwaitingCount = true;
+    $("#flash-status").textContent = "True count check";
+    $(".flash-live").classList.remove("flashing");
+    $("#flash-pause").disabled = true;
+    flashTimer = window.setTimeout(showFlashCountPrompt, Math.min(450, flashSpeed / 2));
+  } else {
+    scheduleFlashCard();
+  }
+}
+
+function startFlashSprint() {
+  window.clearTimeout(flashTimer);
+  flashStartingDecks = Number($("#flash-decks").value);
+  flashDeck = makeFlashDeck();
+  flashIndex = 0;
+  flashRunningCount = 0;
+  flashCheckpoints = 0;
+  flashCorrect = 0;
+  flashPlaying = true;
+  flashPaused = false;
+  flashAwaitingCount = false;
+  flashSubmitting = false;
+
+  $("#flash-count-prompt").hidden = true;
+  $("#flash-paused-overlay").hidden = true;
+  $("#flash-card").className = "flash-card face-down";
+  $("#flash-status").textContent = "Cards flashing";
+  $(".flash-live").classList.add("flashing");
+  $("#flash-pause").disabled = false;
+  $("#flash-pause").innerHTML = "<span>Ⅱ</span> Pause";
+  $("#flash-start span").textContent = "Restart sprint";
+  $("#flash-decks").disabled = true;
+  updateFlashUI();
+  requestScreenWakeLock();
+  scheduleFlashCard(500);
+}
+
+function setFlashPaused(shouldPause) {
+  if (!flashPlaying || flashAwaitingCount || flashPaused === shouldPause) return;
+  flashPaused = shouldPause;
+  window.clearTimeout(flashTimer);
+  $("#flash-paused-overlay").hidden = !flashPaused;
+  $("#flash-status").textContent = flashPaused ? "Sprint paused" : "Cards flashing";
+  $(".flash-live").classList.toggle("flashing", !flashPaused);
+  $("#flash-pause").innerHTML = flashPaused ? "<span>▶</span> Resume" : "<span>Ⅱ</span> Pause";
+  if (flashPaused) releaseScreenWakeLock();
+  else {
+    requestScreenWakeLock();
+    scheduleFlashCard(350);
+  }
+}
+
+function adjustFlashCount(delta) {
+  const input = $("#flash-count-input");
+  input.value = Math.max(-30, Math.min(30, Number(input.value || 0) + delta));
+}
+
+function finishFlashSprint() {
+  flashPlaying = false;
+  flashAwaitingCount = false;
+  window.clearTimeout(flashTimer);
+  $("#flash-status").textContent = "Sprint complete";
+  $(".flash-live").classList.remove("flashing");
+  $("#flash-pause").disabled = true;
+  $("#flash-decks").disabled = false;
+  $("#flash-start span").textContent = "Sprint again";
+  releaseScreenWakeLock();
+
+  const accuracy = Math.round((flashCorrect / 3) * 100);
+  const today = new Date().toISOString().slice(0, 10);
+  if (!progress.practiceDates.includes(today)) progress.practiceDates.push(today);
+  progress.flashSessions += 1;
+  progress.flashBestAccuracy = Math.max(progress.flashBestAccuracy, accuracy);
+  saveProgress();
+  renderProgress();
+
+  $("#flash-result-title").textContent = accuracy === 100 ? "Count held at speed." : accuracy >= 67 ? "Nearly automatic." : "Slow it down, then build.";
+  $("#flash-result-copy").textContent = accuracy === 100 ? "You converted every checkpoint correctly." : "Own the slower pace before moving the cards faster.";
+  $("#flash-result-accuracy").textContent = `${accuracy}%`;
+  $("#flash-result-count").textContent = signedCount(flashRunningCount);
+  $("#flash-result-dialog").showModal();
+}
+
+function submitFlashCount(event) {
+  event.preventDefault();
+  if (!flashAwaitingCount || flashSubmitting) return;
+  flashSubmitting = true;
+  const submitted = Number($("#flash-count-input").value || 0);
+  const expected = getFlashTrueCount();
+  const decksRemaining = getFlashDecksRemaining();
+  const isCorrect = submitted === expected;
+  flashCheckpoints += 1;
+  if (isCorrect) flashCorrect += 1;
+  updateFlashUI();
+
+  const feedback = $("#flash-prompt-feedback");
+  feedback.textContent = isCorrect ? "Correct. Keep flashing." : `${signedCount(flashRunningCount)} ÷ ${decksRemaining} = ${signedCount(expected)}.`;
+  feedback.classList.toggle("wrong", !isCorrect);
+  setFlashControlsDisabled(true);
+  playTone(isCorrect);
+
+  flashTimer = window.setTimeout(() => {
+    $("#flash-count-prompt").hidden = true;
+    flashSubmitting = false;
+    if (flashIndex >= 30) {
+      finishFlashSprint();
+    } else {
+      flashAwaitingCount = false;
+      $("#flash-status").textContent = "Cards flashing";
+      $(".flash-live").classList.add("flashing");
+      $("#flash-pause").disabled = false;
+      scheduleFlashCard(450);
+    }
+  }, 950);
+}
+
 function startSession() {
   deck = makeDeck();
   cardIndex = 0;
@@ -524,6 +725,7 @@ function finishSession() {
 
 function navigate(viewName) {
   if (viewName !== "casino" && casinoPlaying && !casinoPaused && !casinoAwaitingCount) setCasinoPaused(true);
+  if (viewName !== "flash" && flashPlaying && !flashPaused && !flashAwaitingCount) setFlashPaused(true);
   $$(".view").forEach((view) => {
     const active = view.dataset.view === viewName;
     view.hidden = !active;
@@ -601,6 +803,10 @@ $$(`[data-casino-speed]`).forEach((button) => button.addEventListener("click", (
   casinoSpeed = Number(button.dataset.casinoSpeed);
   $$(`[data-casino-speed]`).forEach((item) => item.classList.toggle("active", item === button));
 }));
+$$(`[data-flash-speed]`).forEach((button) => button.addEventListener("click", () => {
+  flashSpeed = Number(button.dataset.flashSpeed);
+  $$(`[data-flash-speed]`).forEach((item) => item.classList.toggle("active", item === button));
+}));
 
 $("#reset-session").addEventListener("click", startSession);
 $("#guide-toggle").addEventListener("change", (event) => document.body.classList.toggle("guide-off", !event.target.checked));
@@ -623,6 +829,13 @@ $("#casino-plus").addEventListener("click", () => adjustCasinoCount(1));
 $("#casino-count-prompt").addEventListener("submit", submitCasinoCount);
 $("#casino-again").addEventListener("click", () => { $("#casino-result-dialog").close(); startCasinoShoe(); });
 $("#casino-leave").addEventListener("click", () => { $("#casino-result-dialog").close(); navigate("practice"); });
+$("#flash-start").addEventListener("click", startFlashSprint);
+$("#flash-pause").addEventListener("click", () => setFlashPaused(!flashPaused));
+$("#flash-minus").addEventListener("click", () => adjustFlashCount(-1));
+$("#flash-plus").addEventListener("click", () => adjustFlashCount(1));
+$("#flash-count-prompt").addEventListener("submit", submitFlashCount);
+$("#flash-again").addEventListener("click", () => { $("#flash-result-dialog").close(); startFlashSprint(); });
+$("#flash-leave").addEventListener("click", () => { $("#flash-result-dialog").close(); navigate("practice"); });
 $("#install-button").addEventListener("click", openInstallDialog);
 $("#install-dismiss").addEventListener("click", () => $("#install-dialog").close());
 $("#native-install-button").addEventListener("click", async () => {
@@ -648,7 +861,7 @@ window.addEventListener("appinstalled", () => {
 window.addEventListener("offline", () => showAppToast("You’re offline — training still works."));
 window.addEventListener("online", () => showAppToast("Back online."));
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && casinoPlaying && !casinoPaused) requestScreenWakeLock();
+  if (document.visibilityState === "visible" && ((casinoPlaying && !casinoPaused) || (flashPlaying && !flashPaused))) requestScreenWakeLock();
 });
 
 document.addEventListener("keydown", (event) => {
@@ -678,4 +891,4 @@ renderTrueCountScenario();
 renderProgress();
 startSession();
 const requestedView = new URLSearchParams(window.location.search).get("view");
-if (["learn", "practice", "casino", "progress"].includes(requestedView)) navigate(requestedView);
+if (["learn", "practice", "flash", "casino", "progress"].includes(requestedView)) navigate(requestedView);

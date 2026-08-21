@@ -17,6 +17,7 @@
   ],
   "shortcuts": [
     { "name": "Practice cards", "short_name": "Practice", "url": "./index.html?view=practice", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Rapid flash", "short_name": "Flash", "url": "./index.html?view=flash", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }] },
     { "name": "Casino mode", "short_name": "Casino", "url": "./index.html?view=casino", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }] }
   ]
 }
