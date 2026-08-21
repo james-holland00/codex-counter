@@ -22,6 +22,7 @@ Then open [http://localhost:4173](http://localhost:4173).
 - Mouse, touch, and keyboard input
 - Live accuracy, answer streak, and running count
 - Locally stored session history and card-group mastery
+- XP levels, daily goals, rank milestones, and unlockable achievements
 - Responsive desktop and mobile layouts
 - Persistent light and dark themes with system-preference detection
 - Interactive True Count Lab

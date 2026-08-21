@@ -25,7 +25,7 @@
         } catch { document.documentElement.dataset.theme = "light"; }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=11" />
+    <link rel="stylesheet" href="styles.css?v=12" />
     <title>Counted — Blackjack Trainer</title>
   </head>
   <body>
@@ -48,6 +48,7 @@
           <div class="streak-pill" title="Practice streak">
             <span aria-hidden="true">◆</span><strong id="header-streak">1</strong><span>day streak</span>
           </div>
+          <button class="level-pill" data-nav="progress" aria-label="View progression"><small>LV</small><strong id="header-level">1</strong></button>
           <button class="icon-button install-button" id="install-button" aria-label="Install Counted">
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v11M8 10l4 4 4-4M5 16v4h14v-4"/></svg>
           </button>
@@ -358,9 +359,30 @@
 
         <section class="view" id="progress-view" data-view="progress" hidden>
           <div class="page-heading progress-heading">
-            <div><p class="eyebrow">Your progress</p><h1>Sharper every session.</h1><p>Your practice is stored on this device.</p></div>
+            <div><p class="eyebrow">Your progression</p><h1>Sharper every session.</h1><p>Earn XP, climb the ranks, and build a training streak that lasts.</p></div>
             <button class="primary-button" data-nav="practice">Practice now <span>→</span></button>
           </div>
+
+          <section class="progression-hero" aria-labelledby="progression-title">
+            <div class="rank-medallion"><span>Level</span><strong id="player-level">1</strong><i aria-hidden="true">♠</i></div>
+            <div class="rank-summary">
+              <p class="eyebrow">Current rank</p>
+              <h2 id="progression-title"><span id="player-rank">Rookie Counter</span></h2>
+              <p id="rank-message">Learn the values. Make the count automatic.</p>
+              <div class="xp-label"><span><strong id="current-xp">0</strong> XP</span><span id="next-level-copy">150 XP to Level 2</span></div>
+              <div class="xp-track" aria-label="Level progress"><span id="xp-progress"></span></div>
+            </div>
+            <article class="daily-goal-card">
+              <div class="daily-ring" id="daily-ring"><strong id="daily-percent">0%</strong><span>today</span></div>
+              <div><p class="eyebrow">Daily goal</p><h3><span id="daily-xp">0</span> / 100 XP</h3><p id="daily-goal-copy">Complete a short drill to start today’s run.</p></div>
+              <button data-nav="flash">Quick sprint <span>→</span></button>
+            </article>
+          </section>
+
+          <section class="rank-road" aria-labelledby="rank-road-heading">
+            <div class="section-title"><div><p class="eyebrow">Rank journey</p><h2 id="rank-road-heading">Road to true-count mastery</h2></div><span id="rank-road-progress">Level 1 of 12</span></div>
+            <div class="rank-track" id="rank-track"></div>
+          </section>
 
           <div class="stat-grid">
             <article class="stat-card featured-stat"><span class="stat-icon">◎</span><small>Overall accuracy</small><strong id="overall-accuracy">—</strong><p id="accuracy-note">Complete your first session to set a baseline.</p></article>
@@ -381,6 +403,11 @@
               <div class="mastery-row"><span class="mastery-dot high-dot">−1</span><div><strong>High cards</strong><small>10, J, Q, K, A</small></div><b id="high-mastery">—</b></div>
             </article>
           </div>
+
+          <section class="achievements-section" aria-labelledby="achievements-heading">
+            <div class="section-title"><div><p class="eyebrow">Milestones</p><h2 id="achievements-heading">Achievements</h2></div><span id="achievement-total">0 / 6 unlocked</span></div>
+            <div class="achievement-grid" id="achievement-grid"></div>
+          </section>
         </section>
       </main>
 
@@ -436,6 +463,6 @@
 
     <div class="app-toast" id="app-toast" role="status" hidden><span id="app-toast-copy">Ready offline.</span><button id="app-toast-close" aria-label="Dismiss">×</button></div>
 
-    <script src="app.js?v=11" defer></script>
+    <script src="app.js?v=12" defer></script>
   </body>
 </html>

@@ -56,6 +56,22 @@ const trueCountScenarios = [
   { running: 5, decks: 2.5, answer: 2 },
   { running: -3, decks: 1.5, answer: -2 },
 ];
+const levelThresholds = [0, 150, 350, 650, 1000, 1500, 2200, 3000, 4000, 5200, 6600, 8200];
+const rankMilestones = [
+  { level: 1, title: "Rookie Counter", copy: "Learn the values. Make the count automatic.", icon: "♠" },
+  { level: 3, title: "Running Counter", copy: "Hold the count cleanly through longer sequences.", icon: "+1" },
+  { level: 5, title: "Deck Estimator", copy: "See the shoe depth and convert without hesitation.", icon: "◫" },
+  { level: 8, title: "Casino Sharp", copy: "Keep your process steady at real table speed.", icon: "◆" },
+  { level: 11, title: "True Count Master", copy: "Card values, deck estimation, and conversion work as one.", icon: "★" },
+];
+const achievementDefinitions = [
+  { id: "first-deal", icon: "♠", title: "First Deal", copy: "Count 20 practice cards.", unlocked: (p) => p.totalCards >= 20 },
+  { id: "hundred-club", icon: "100", title: "Hundred Club", copy: "Count 100 practice cards.", unlocked: (p) => p.totalCards >= 100 },
+  { id: "hot-run", icon: "↗", title: "Hot Run", copy: "Reach a 20-card answer streak.", unlocked: (p) => p.bestStreak >= 20 },
+  { id: "casino-ready", icon: "◆", title: "Casino Ready", copy: "Clear every Casino Mode checkpoint.", unlocked: (p) => p.casinoBestAccuracy >= 100 },
+  { id: "flash-point", icon: "⚡", title: "Flash Point", copy: "Perfect a Rapid Flash sprint.", unlocked: (p) => p.flashBestAccuracy >= 100 },
+  { id: "committed", icon: "7", title: "Committed", copy: "Build a seven-day practice streak.", unlocked: () => practiceDayStreak() >= 7 },
+];
 
 const storageKey = "counted-progress-v1";
 const defaultProgress = {
@@ -67,6 +83,10 @@ const defaultProgress = {
   practiceDates: [],
   flashSessions: 0,
   flashBestAccuracy: 0,
+  casinoSessions: 0,
+  casinoBestAccuracy: 0,
+  xp: 0,
+  dailyGoal: { date: "", xp: 0 },
 };
 
 let progress = loadProgress();
@@ -171,6 +191,7 @@ function answerTrueCount(value) {
   feedback.textContent = isCorrect ? "Correct — keep converting." : `${signedCount(scenario.running)} ÷ ${scenario.decks} = ${signedCount(scenario.answer)}.`;
   feedback.className = `true-count-feedback ${isCorrect ? "correct" : "wrong"}`;
   playTone(isCorrect);
+  awardXP(isCorrect ? 6 : 1);
   if (navigator.vibrate) navigator.vibrate(isCorrect ? 20 : [25, 35, 25]);
 
   trueCountTimer = window.setTimeout(() => {
@@ -216,7 +237,18 @@ async function releaseScreenWakeLock() {
 function loadProgress() {
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey));
-    return saved ? { ...defaultProgress, ...saved, groups: { ...defaultProgress.groups, ...saved.groups } } : structuredClone(defaultProgress);
+    if (!saved) return structuredClone(defaultProgress);
+    const merged = {
+      ...defaultProgress,
+      ...saved,
+      groups: { ...defaultProgress.groups, ...saved.groups },
+      dailyGoal: { ...defaultProgress.dailyGoal, ...saved.dailyGoal },
+    };
+    if (!Number.isFinite(saved.xp)) {
+      merged.xp = (saved.totalCards || 0) * 2 + (saved.sessions?.length || 0) * 40 + (saved.flashSessions || 0) * 90;
+    }
+    if (merged.dailyGoal.date !== todayKey()) merged.dailyGoal = { date: todayKey(), xp: 0 };
+    return merged;
   } catch {
     return structuredClone(defaultProgress);
   }
@@ -224,6 +256,34 @@ function loadProgress() {
 
 function saveProgress() {
   localStorage.setItem(storageKey, JSON.stringify(progress));
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function levelFromXP(xp) {
+  let level = 1;
+  levelThresholds.forEach((threshold, index) => {
+    if (xp >= threshold) level = index + 1;
+  });
+  return level;
+}
+
+function rankForLevel(level) {
+  return [...rankMilestones].reverse().find((rank) => level >= rank.level) || rankMilestones[0];
+}
+
+function awardXP(amount) {
+  const previousLevel = levelFromXP(progress.xp);
+  if (progress.dailyGoal.date !== todayKey()) progress.dailyGoal = { date: todayKey(), xp: 0 };
+  progress.xp += amount;
+  progress.dailyGoal.xp += amount;
+  saveProgress();
+  renderProgression();
+
+  const nextLevel = levelFromXP(progress.xp);
+  if (nextLevel > previousLevel) showAppToast(`Level ${nextLevel} unlocked — ${rankForLevel(nextLevel).title}.`, 4400);
 }
 
 function getValue(rank) {
@@ -391,8 +451,11 @@ function finishCasinoShoe() {
   releaseScreenWakeLock();
 
   const accuracy = Math.round((casinoCorrect / 4) * 100);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayKey();
   if (!progress.practiceDates.includes(today)) progress.practiceDates.push(today);
+  progress.casinoSessions += 1;
+  progress.casinoBestAccuracy = Math.max(progress.casinoBestAccuracy, accuracy);
+  awardXP(accuracy === 100 ? 50 : 20);
   saveProgress();
   renderProgress();
 
@@ -418,6 +481,7 @@ function submitCasinoCount(event) {
   feedback.classList.toggle("wrong", !isCorrect);
   setCasinoControlsDisabled(true);
   playTone(isCorrect);
+  awardXP(isCorrect ? 20 : 4);
 
   casinoTimer = window.setTimeout(() => {
     $("#casino-count-prompt").hidden = true;
@@ -564,10 +628,11 @@ function finishFlashSprint() {
   releaseScreenWakeLock();
 
   const accuracy = Math.round((flashCorrect / 3) * 100);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayKey();
   if (!progress.practiceDates.includes(today)) progress.practiceDates.push(today);
   progress.flashSessions += 1;
   progress.flashBestAccuracy = Math.max(progress.flashBestAccuracy, accuracy);
+  awardXP(accuracy === 100 ? 60 : 25);
   saveProgress();
   renderProgress();
 
@@ -595,6 +660,7 @@ function submitFlashCount(event) {
   feedback.classList.toggle("wrong", !isCorrect);
   setFlashControlsDisabled(true);
   playTone(isCorrect);
+  awardXP(isCorrect ? 25 : 5);
 
   flashTimer = window.setTimeout(() => {
     $("#flash-count-prompt").hidden = true;
@@ -665,6 +731,7 @@ function answer(value) {
   }
 
   runningCount += expected;
+  awardXP(isCorrect ? 3 : 1);
   showFeedback(isCorrect, expected);
   playTone(isCorrect);
   cardIndex += 1;
@@ -707,11 +774,12 @@ function playTone(isCorrect) {
 
 function finishSession() {
   const accuracy = Math.round((correct / sessionLength) * 100);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayKey();
   if (!progress.practiceDates.includes(today)) progress.practiceDates.push(today);
   progress.bestStreak = Math.max(progress.bestStreak, sessionBestStreak);
   progress.sessions.unshift({ date: Date.now(), cards: sessionLength, accuracy, streak: sessionBestStreak });
   progress.sessions = progress.sessions.slice(0, 12);
+  awardXP(accuracy >= 90 ? 50 : 25);
   saveProgress();
   renderProgress();
 
@@ -756,7 +824,48 @@ function practiceDayStreak() {
   return Math.max(streak, 1);
 }
 
+function renderProgression() {
+  if (!$("#player-level")) return;
+  if (progress.dailyGoal.date !== todayKey()) progress.dailyGoal = { date: todayKey(), xp: 0 };
+
+  const level = levelFromXP(progress.xp);
+  const rank = rankForLevel(level);
+  const currentThreshold = levelThresholds[level - 1];
+  const nextThreshold = levelThresholds[level] ?? currentThreshold;
+  const levelSpan = Math.max(1, nextThreshold - currentThreshold);
+  const levelProgress = level >= levelThresholds.length ? 100 : Math.min(100, ((progress.xp - currentThreshold) / levelSpan) * 100);
+  const xpToNext = Math.max(0, nextThreshold - progress.xp);
+  const dailyPercent = Math.min(100, Math.round((progress.dailyGoal.xp / 100) * 100));
+
+  $("#header-level").textContent = level;
+  $("#player-level").textContent = level;
+  $("#player-rank").textContent = rank.title;
+  $("#rank-message").textContent = rank.copy;
+  $("#current-xp").textContent = progress.xp.toLocaleString();
+  $("#next-level-copy").textContent = level >= levelThresholds.length ? "Maximum level reached" : `${xpToNext} XP to Level ${level + 1}`;
+  $("#xp-progress").style.width = `${levelProgress}%`;
+  $("#daily-xp").textContent = progress.dailyGoal.xp;
+  $("#daily-percent").textContent = `${dailyPercent}%`;
+  $("#daily-ring").style.setProperty("--daily", `${dailyPercent}%`);
+  $("#daily-goal-copy").textContent = dailyPercent >= 100 ? "Daily goal complete. Keep going for bonus XP." : dailyPercent >= 50 ? "Halfway there—one more focused drill." : "Complete a short drill to build today’s run.";
+  $("#rank-road-progress").textContent = `Level ${level} of ${levelThresholds.length}`;
+
+  $("#rank-track").innerHTML = rankMilestones.map((milestone) => {
+    const isCurrent = rank.title === milestone.title;
+    const isUnlocked = level >= milestone.level;
+    return `<article class="rank-step${isUnlocked ? " unlocked" : ""}${isCurrent ? " current" : ""}"><small>Level ${milestone.level}</small><strong>${milestone.title}</strong><span>${isUnlocked ? (isCurrent ? "Current rank" : "Unlocked") : `${levelThresholds[milestone.level - 1].toLocaleString()} XP`}</span></article>`;
+  }).join("");
+
+  const unlockedAchievements = achievementDefinitions.filter((achievement) => achievement.unlocked(progress)).length;
+  $("#achievement-total").textContent = `${unlockedAchievements} / ${achievementDefinitions.length} unlocked`;
+  $("#achievement-grid").innerHTML = achievementDefinitions.map((achievement) => {
+    const unlocked = achievement.unlocked(progress);
+    return `<article class="achievement-card${unlocked ? " unlocked" : ""}"><span class="achievement-badge" aria-hidden="true">${unlocked ? achievement.icon : "·"}</span><div><strong>${achievement.title}</strong><small>${unlocked ? "Unlocked" : achievement.copy}</small></div></article>`;
+  }).join("");
+}
+
 function renderProgress() {
+  renderProgression();
   const accuracy = progress.totalCards ? Math.round((progress.correctCards / progress.totalCards) * 100) : null;
   $("#overall-accuracy").textContent = accuracy === null ? "—" : `${accuracy}%`;
   $("#accuracy-note").textContent = accuracy === null ? "Complete your first session to set a baseline." : accuracy >= 90 ? "You’re reading cards with confidence." : "Aim for 90% before adding more speed.";

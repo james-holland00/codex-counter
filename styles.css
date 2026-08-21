@@ -60,6 +60,9 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgba(220, 173, 87
 .streak-pill { display: flex; align-items: center; gap: 6px; padding: 9px 13px; border: 1px solid rgba(18, 32, 29, .1); border-radius: 999px; background: rgba(255, 253, 248, .7); font-size: 13px; }
 .streak-pill > span:first-child { color: var(--gold); }
 .streak-pill strong { font-size: 14px; }
+.level-pill { min-width: 48px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 9px; border: 1px solid rgba(18,32,29,.12); border-radius: 999px; color: var(--forest); background: var(--mint); cursor: pointer; }
+.level-pill small { font-size: 8px; font-weight: 800; letter-spacing: .08em; }
+.level-pill strong { font-family: "Fraunces",serif; font-size: 16px; }
 .icon-button { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid rgba(18, 32, 29, .12); border-radius: 50%; background: transparent; cursor: pointer; }
 .icon-button svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .icon-button { touch-action: manipulation; }
@@ -388,6 +391,41 @@ kbd { min-width: 23px; display: inline-grid; place-items: center; padding: 1px 5
 
 /* Progress */
 .progress-heading h1 { font-size: clamp(44px, 5vw, 68px); }
+.progression-hero { display: grid; grid-template-columns: auto 1fr minmax(300px,.7fr); align-items: center; gap: 28px; margin-bottom: 20px; padding: 30px; border: 1px solid #28564a; border-radius: 26px; color: #edf7f2; background: radial-gradient(circle at 8% 0,rgba(169,221,200,.2),transparent 18rem),linear-gradient(135deg,#0b3229,#071e19); box-shadow: 0 24px 62px rgba(7,35,28,.2); }
+.rank-medallion { width: 126px; height: 126px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid rgba(169,221,200,.33); border-radius: 50%; background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 7px rgba(169,221,200,.045),0 12px 30px rgba(0,0,0,.18); }
+.rank-medallion span { color: #8eb9a8; font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.rank-medallion strong { font-family: "Fraunces",serif; font-size: 48px; line-height: .95; }
+.rank-medallion i { position: absolute; right: 5px; bottom: 10px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #17382f; background: var(--gold); font-style: normal; font-size: 13px; }
+.rank-summary .eyebrow { color: var(--mint-bright); }
+.rank-summary h2 { font-size: clamp(30px,3vw,42px); }
+.rank-summary > p:last-of-type { margin: 8px 0 18px; color: #92aaa0; font-size: 13px; }
+.xp-label { display: flex; justify-content: space-between; margin-bottom: 8px; color: #9db3aa; font-size: 10px; font-weight: 700; }
+.xp-label strong { color: #eff8f3; }
+.xp-track { height: 8px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.09); }
+.xp-track span { width: 0; height: 100%; display: block; border-radius: inherit; background: linear-gradient(90deg,#7ac2a5,#b6e8d3); transition: width .4s ease; }
+.daily-goal-card { min-height: 142px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 15px; padding: 18px; border: 1px solid rgba(255,255,255,.1); border-radius: 19px; background: rgba(255,255,255,.045); }
+.daily-ring { --daily: 0%; width: 72px; height: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-radius: 50%; background: conic-gradient(var(--mint-bright) var(--daily),rgba(255,255,255,.09) 0); }
+.daily-ring::after { content: ""; position: absolute; inset: 6px; border-radius: inherit; background: #0c2c24; }
+.daily-ring > * { position: relative; z-index: 1; }
+.daily-ring strong { font-family: "Fraunces",serif; font-size: 19px; }
+.daily-ring span { color: #8ba59a; font-size: 8px; font-weight: 700; text-transform: uppercase; }
+.daily-goal-card .eyebrow { margin-bottom: 4px; color: #89baa7; font-size: 9px; }
+.daily-goal-card h3 { margin: 0; font-family: "Fraunces",serif; font-size: 20px; }
+.daily-goal-card p:last-child { margin: 4px 0 0; color: #8fa79d; font-size: 10px; line-height: 1.4; }
+.daily-goal-card button { grid-column: 1 / -1; min-height: 38px; display: flex; align-items: center; justify-content: space-between; padding: 0 13px; border: 0; border-radius: 10px; color: #0b3027; background: var(--mint-bright); font-size: 11px; font-weight: 800; cursor: pointer; }
+.rank-road { margin: 18px 0; padding: 26px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.4); }
+.rank-track { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
+.rank-step { min-height: 116px; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.5); }
+.rank-step::before { content: ""; width: 7px; height: 7px; position: absolute; top: 16px; right: 16px; border-radius: 50%; background: #aeb8b3; }
+.rank-step.unlocked { border-color: #9bbfae; background: #e5f0e9; }
+.rank-step.unlocked::before { background: #4f9279; box-shadow: 0 0 0 4px rgba(79,146,121,.12); }
+.rank-step.current { color: white; border-color: var(--forest); background: var(--forest); box-shadow: 0 12px 25px rgba(11,49,41,.16); }
+.rank-step.current::before { background: var(--gold); }
+.rank-step small { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.rank-step.current small { color: var(--mint-bright); }
+.rank-step strong { font-family: "Fraunces",serif; font-size: 18px; line-height: 1.05; }
+.rank-step span { color: var(--muted); font-size: 9px; }
+.rank-step.current span { color: rgba(255,255,255,.62); }
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 .stat-card { min-height: 225px; display: flex; flex-direction: column; justify-content: flex-end; padding: 26px; position: relative; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.55); }
 .featured-stat { color: white; border-color: var(--forest); background: var(--forest); }
@@ -417,6 +455,15 @@ kbd { min-width: 23px; display: inline-grid; place-items: center; padding: 1px 5
 .mastery-row strong { font-size: 13px; }
 .mastery-row small { margin-top: 2px; color: var(--muted); }
 .mastery-row b { font-family: "Fraunces", serif; font-size: 18px; }
+.achievements-section { margin-top: 18px; padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.4); }
+.achievement-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 11px; }
+.achievement-card { min-height: 118px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 14px; padding: 17px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.52); }
+.achievement-badge { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 16px 16px 16px 5px; color: #89958f; background: #e4e7e2; font-size: 20px; transform: rotate(-3deg); }
+.achievement-card div:last-child { display: flex; flex-direction: column; }
+.achievement-card strong { font-family: "Fraunces",serif; font-size: 17px; }
+.achievement-card small { margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+.achievement-card.unlocked { border-color: #9fc3b1; background: #eef6f1; }
+.achievement-card.unlocked .achievement-badge { color: #153c31; background: var(--mint-bright); box-shadow: 0 8px 18px rgba(42,103,83,.16); }
 
 /* Completion dialog */
 dialog { width: min(460px, calc(100% - 32px)); padding: 36px; border: 0; border-radius: 25px; color: var(--ink); background: var(--paper); box-shadow: 0 30px 90px rgba(4,23,18,.35); text-align: center; }
@@ -473,6 +520,7 @@ dialog > p:not(.eyebrow) { color: var(--muted); }
 [data-theme="dark"] .mobile-nav button.active { color: var(--mint-bright); }
 [data-theme="dark"] .desktop-nav button::after { background: var(--mint-bright); }
 [data-theme="dark"] .streak-pill,
+[data-theme="dark"] .level-pill,
 [data-theme="dark"] .keyboard-tip,
 [data-theme="dark"] .segmented-control { border-color: var(--line); background: rgba(255, 255, 255, .035); }
 [data-theme="dark"] .icon-button { border-color: var(--line); }
@@ -499,7 +547,17 @@ dialog > p:not(.eyebrow) { color: var(--muted); }
 [data-theme="dark"] .card-stack span { border-color: #40504a; background: #1e312a; }
 [data-theme="dark"] .stat-card,
 [data-theme="dark"] .history-card,
-[data-theme="dark"] .mastery-card { border-color: var(--line); background: #10211b; }
+[data-theme="dark"] .mastery-card,
+[data-theme="dark"] .rank-road,
+[data-theme="dark"] .achievements-section,
+[data-theme="dark"] .rank-step,
+[data-theme="dark"] .achievement-card { border-color: var(--line); background: #10211b; }
+[data-theme="dark"] .level-pill { color: var(--mint-bright); }
+[data-theme="dark"] .rank-step.unlocked,
+[data-theme="dark"] .achievement-card.unlocked { border-color: #315f51; background: #15342b; }
+[data-theme="dark"] .rank-step.current { border-color: #3c7565; background: #1b5144; }
+[data-theme="dark"] .achievement-badge { color: #75867f; background: #1b2e27; }
+[data-theme="dark"] .achievement-card.unlocked .achievement-badge { color: #092219; background: var(--mint-bright); }
 [data-theme="dark"] .featured-stat { border-color: #306558; background: #12382f; }
 [data-theme="dark"] .stat-icon { color: var(--mint-bright); background: #1a493d; }
 [data-theme="dark"] .history-item { background: #142720; }
@@ -554,6 +612,10 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .true-count-card .primary-button { grid-column: 2; width: max-content; }
   .stat-grid { grid-template-columns: 1fr 1fr; }
   .progress-lower-grid { grid-template-columns: 1fr; }
+  .progression-hero { grid-template-columns: auto 1fr; }
+  .daily-goal-card { grid-column: 1 / -1; }
+  .rank-track { grid-template-columns: repeat(3,1fr); }
+  .achievement-grid { grid-template-columns: 1fr 1fr; }
   .strategy-heading-row { align-items: start; }
   .strategy-toolbar { align-items: flex-start; flex-direction: column; }
   .strategy-legend { justify-content: flex-start; }
@@ -575,6 +637,7 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .icon-button.theme-button { display: grid; }
   .icon-button.install-button { display: grid; }
   .topbar-actions { gap: 7px; }
+  .level-pill { min-width: 43px; padding: 0 7px; }
   main { min-height: calc(100dvh - 62px - env(safe-area-inset-top)); }
   .view { padding: 39px 18px 35px; }
   .mobile-nav { height: calc(65px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 60; left: 0; right: 0; bottom: 0; padding: 6px max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px,env(safe-area-inset-left)); border-top: 1px solid rgba(18,32,29,.12); background: rgba(250,248,242,.94); backdrop-filter: blur(18px); }
@@ -687,6 +750,21 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .answer-buttons button { min-height: 62px; }
   .page-heading { display: block; margin-bottom: 30px; }
   .progress-heading .primary-button { width: 100%; margin-top: 22px; }
+  .progression-hero { grid-template-columns: 1fr; justify-items: center; gap: 20px; padding: 23px 18px; text-align: center; }
+  .rank-medallion { width: 105px; height: 105px; }
+  .rank-medallion strong { font-size: 40px; }
+  .rank-summary { width: 100%; }
+  .rank-summary h2 { font-size: 31px; }
+  .xp-label { text-align: left; }
+  .daily-goal-card { width: 100%; text-align: left; }
+  .rank-road { padding: 21px 16px; }
+  .rank-road .section-title { align-items: start; flex-direction: column; gap: 7px; }
+  .rank-track { grid-template-columns: 1fr 1fr; }
+  .rank-step { min-height: 105px; }
+  .achievements-section { padding: 21px 16px; }
+  .achievements-section .section-title { align-items: start; flex-direction: column; gap: 7px; }
+  .achievement-grid { grid-template-columns: 1fr; }
+  .achievement-card { min-height: 100px; }
   .stat-grid { gap: 10px; }
   .stat-card { min-height: 170px; padding: 18px; }
   .stat-icon { width: 32px; height: 32px; top: 16px; right: 16px; }
@@ -709,8 +787,12 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .flash-stage { height: 490px; }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 430px) {
   .streak-pill { display: none; }
+}
+
+@media (max-width: 360px) {
+  .level-pill { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
