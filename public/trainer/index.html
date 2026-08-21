@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta id="theme-color" name="theme-color" content="#f3f0e8" />
+    <meta name="description" content="A focused, friendly blackjack card-counting trainer." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Counted" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem("counted-theme");
+          const theme = saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+          document.documentElement.dataset.theme = theme;
+        } catch { document.documentElement.dataset.theme = "light"; }
+      })();
+    </script>
+    <link rel="stylesheet" href="styles.css?v=10" />
+    <title>Counted — Blackjack Trainer</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <button class="brand" data-nav="practice" aria-label="Go to practice">
+          <span class="brand-mark" aria-hidden="true"><span>♠</span></span>
+          <span>counted</span>
+        </button>
+
+        <nav class="desktop-nav" aria-label="Main navigation">
+          <button data-nav="learn">Learn</button>
+          <button class="active" data-nav="practice">Practice</button>
+          <button data-nav="casino">Casino</button>
+          <button data-nav="progress">Progress</button>
+        </nav>
+
+        <div class="topbar-actions">
+          <div class="streak-pill" title="Practice streak">
+            <span aria-hidden="true">◆</span><strong id="header-streak">1</strong><span>day streak</span>
+          </div>
+          <button class="icon-button install-button" id="install-button" aria-label="Install Counted">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3v11M8 10l4 4 4-4M5 16v4h14v-4"/></svg>
+          </button>
+          <button class="icon-button theme-button" id="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false">
+            <svg class="theme-icon theme-icon-moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20.4 15.2A8.4 8.4 0 0 1 8.8 3.6 8.5 8.5 0 1 0 20.4 15.2Z"/></svg>
+            <svg class="theme-icon theme-icon-sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button class="icon-button" id="sound-toggle" aria-label="Turn sounds off" aria-pressed="true">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5Zm5.5 4.2a4 4 0 0 1 0 5.6M19 7a7 7 0 0 1 0 10"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="view" id="learn-view" data-view="learn" hidden>
+          <div class="page-heading narrow-heading">
+            <p class="eyebrow">Hi-Lo system</p>
+            <h1>Three groups.<br />One simple count.</h1>
+            <p>Give every card a value, keep a running total, and you’ll know when the remaining deck favors the player.</p>
+          </div>
+
+          <div class="value-lesson-grid">
+            <article class="lesson-card lesson-low">
+              <div class="mini-card-row" aria-hidden="true"><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+              <div><span class="value-badge positive">+1</span><h2>Low cards</h2><p>Removing low cards helps the player, so add one to the running count.</p></div>
+            </article>
+            <article class="lesson-card lesson-neutral">
+              <div class="mini-card-row" aria-hidden="true"><span>7</span><span>8</span><span>9</span></div>
+              <div><span class="value-badge neutral">0</span><h2>Neutral cards</h2><p>These cards don’t shift the advantage. Leave your count unchanged.</p></div>
+            </article>
+            <article class="lesson-card lesson-high">
+              <div class="mini-card-row red-suits" aria-hidden="true"><span>10</span><span>J</span><span>Q</span><span>K</span><span>A</span></div>
+              <div><span class="value-badge negative">−1</span><h2>High cards</h2><p>High cards favor the player while still in the shoe, so subtract one when they appear.</p></div>
+            </article>
+          </div>
+
+          <article class="true-count-card">
+            <div class="formula-chip">Running count ÷ decks remaining</div>
+            <div>
+              <p class="eyebrow">Next concept</p>
+              <h2>From running count to true count</h2>
+              <p>In multi-deck games, divide by the estimated decks remaining. A running count of +6 with 3 decks left becomes a true count of +2.</p>
+            </div>
+            <button class="primary-button" data-nav="practice">Start practicing <span>→</span></button>
+          </article>
+
+          <section class="true-count-lab" aria-labelledby="true-count-lab-heading">
+            <div class="true-count-lab-copy">
+              <p class="eyebrow">True Count Lab</p>
+              <h2 id="true-count-lab-heading">Make the conversion automatic.</h2>
+              <p>Divide the running count by the decks remaining. Tap the true count without reaching for a calculator.</p>
+              <div class="lab-score"><span>Current streak</span><strong id="true-count-streak">0</strong></div>
+            </div>
+            <article class="true-count-quiz">
+              <div class="true-count-equation">
+                <div><small>Running count</small><strong id="lab-running-count">+6</strong></div>
+                <span>÷</span>
+                <div><small>Decks remaining</small><strong id="lab-decks">3</strong></div>
+                <span>=</span>
+                <div class="lab-question"><small>True count</small><strong>?</strong></div>
+              </div>
+              <div class="true-count-options" id="true-count-options" role="group" aria-label="Choose the true count"></div>
+              <div class="true-count-feedback" id="true-count-feedback" role="status">Choose an answer.</div>
+            </article>
+          </section>
+
+          <section class="strategy-section" aria-labelledby="strategy-heading">
+            <div class="strategy-heading-row">
+              <div>
+                <p class="eyebrow">Basic strategy</p>
+                <h2 id="strategy-heading">Make the right play first.</h2>
+                <p>Counting tells you what remains. Basic strategy tells you how to play the hand in front of you.</p>
+              </div>
+              <div class="rules-chip"><span>Table rules</span> 4–8 decks · dealer stands soft 17 · double after split · no surrender</div>
+            </div>
+
+            <div class="strategy-toolbar">
+              <div class="strategy-tabs" role="tablist" aria-label="Basic strategy chart type">
+                <button class="active" id="hard-tab" role="tab" aria-selected="true" aria-controls="strategy-chart" data-strategy-tab="hard">Hard totals</button>
+                <button id="soft-tab" role="tab" aria-selected="false" aria-controls="strategy-chart" data-strategy-tab="soft">Soft totals</button>
+                <button id="pairs-tab" role="tab" aria-selected="false" aria-controls="strategy-chart" data-strategy-tab="pairs">Pairs</button>
+              </div>
+              <div class="strategy-legend" aria-label="Chart legend">
+                <span><i class="legend-hit">H</i> Hit</span>
+                <span><i class="legend-stand">S</i> Stand</span>
+                <span><i class="legend-double">D</i> Double*</span>
+                <span><i class="legend-split">P</i> Split</span>
+              </div>
+            </div>
+
+            <div class="strategy-chart-shell">
+              <div class="chart-mobile-hint">Swipe to see every dealer card <span>→</span></div>
+              <div class="strategy-chart-scroll">
+                <table class="strategy-chart" id="strategy-chart" role="tabpanel" aria-labelledby="hard-tab"></table>
+              </div>
+            </div>
+            <p class="chart-footnote">* Double if allowed; otherwise hit. Rules change the correct play in some situations, so match the chart to the table you are playing.</p>
+          </section>
+        </section>
+
+        <section class="view active-view" id="practice-view" data-view="practice">
+          <div class="practice-layout">
+            <aside class="practice-sidebar">
+              <div>
+                <p class="eyebrow">Daily practice</p>
+                <h1>Card values</h1>
+                <p>Call the Hi-Lo value of each card. Build accuracy first—speed comes later.</p>
+              </div>
+
+              <div class="session-settings">
+                <label for="session-length">Session length</label>
+                <div class="segmented-control" id="session-length" role="group" aria-label="Session length">
+                  <button data-length="20">20</button>
+                  <button class="active" data-length="40">40</button>
+                  <button data-length="52">52</button>
+                </div>
+                <label class="switch-row">
+                  <span><strong>Show guide</strong><small>Keep the values visible</small></span>
+                  <input id="guide-toggle" type="checkbox" checked />
+                  <span class="switch" aria-hidden="true"></span>
+                </label>
+              </div>
+
+              <div class="keyboard-tip"><span>Tip</span> Use your keyboard: <kbd>1</kbd> for +1, <kbd>0</kbd> for 0, and <kbd>−</kbd> for −1.</div>
+            </aside>
+
+            <div class="trainer-panel">
+              <div class="session-bar">
+                <button class="text-button" id="reset-session"><span>↻</span> Reset</button>
+                <div class="progress-track" aria-label="Session progress"><span id="session-progress"></span></div>
+                <span class="session-count"><strong id="card-number">1</strong>/<span id="card-total">40</span></span>
+              </div>
+
+              <div class="trainer-stage">
+                <div class="score-strip" aria-label="Current session score">
+                  <span><small>Accuracy</small><strong id="accuracy-value">—</strong></span>
+                  <span><small>Streak</small><strong id="streak-value">0</strong></span>
+                  <span><small>Running count</small><strong id="running-count">0</strong></span>
+                </div>
+
+                <div class="card-zone" aria-live="polite">
+                  <div class="card-stack" aria-hidden="true"><span></span><span></span></div>
+                  <article class="playing-card" id="playing-card">
+                    <div class="card-corner card-corner-top"><strong id="card-rank-top">8</strong><span id="card-suit-top">♣</span></div>
+                    <div class="card-pips" id="card-pips">♣</div>
+                    <div class="card-corner card-corner-bottom"><strong id="card-rank-bottom">8</strong><span id="card-suit-bottom">♣</span></div>
+                  </article>
+                  <div class="feedback-bubble" id="feedback" role="status"></div>
+                </div>
+
+                <div class="answer-area">
+                  <p>What is this card worth?</p>
+                  <div class="answer-buttons" role="group" aria-label="Choose the card value">
+                    <button class="answer-positive" data-answer="1"><span>+1</span><small>2 — 6</small></button>
+                    <button class="answer-neutral" data-answer="0"><span>0</span><small>7 — 9</small></button>
+                    <button class="answer-negative" data-answer="-1"><span>−1</span><small>10 — A</small></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view casino-view" id="casino-view" data-view="casino" hidden>
+          <div class="casino-heading">
+            <div>
+              <p class="eyebrow">Live simulation</p>
+              <h1>Casino mode.</h1>
+              <p>Track the count while the dealer keeps moving. You’ll check in every five cards—no guides, no running total.</p>
+            </div>
+            <div class="casino-setup">
+              <div>
+                <label>Dealing pace</label>
+                <div class="casino-speed" role="group" aria-label="Dealing pace">
+                  <button data-casino-speed="1500">Warm-up</button>
+                  <button class="active" data-casino-speed="950">Table</button>
+                  <button data-casino-speed="600">Pit</button>
+                </div>
+              </div>
+              <button class="casino-start-button" id="casino-start"><span>Deal a shoe</span><b>→</b></button>
+            </div>
+          </div>
+
+          <div class="casino-table-shell">
+            <div class="casino-table-topbar">
+              <div class="casino-live"><i></i><span id="casino-status">Table ready</span></div>
+              <div class="casino-stats">
+                <span><small>Cards left</small><strong id="casino-cards-left">20</strong></span>
+                <span><small>Checkpoint</small><strong><b id="casino-checkpoint">0</b>/4</strong></span>
+                <span><small>Running count</small><strong class="count-hidden">•••</strong></span>
+              </div>
+              <button class="casino-pause" id="casino-pause" disabled><span>Ⅱ</span> Pause</button>
+            </div>
+
+            <div class="casino-felt">
+              <div class="casino-watermark" aria-hidden="true"><span>♠</span><strong>COUNTED</strong><small>Blackjack · pays 3 to 2</small></div>
+              <div class="casino-shoe" aria-hidden="true"><i></i><i></i><i></i><span>Shoe</span></div>
+
+              <div class="casino-card-stage" aria-live="polite">
+                <article class="casino-card face-down" id="casino-card">
+                  <div class="casino-card-corner top"><strong id="casino-rank-top">A</strong><span id="casino-suit-top">♠</span></div>
+                  <div class="casino-card-suit" id="casino-card-suit">♠</div>
+                  <div class="casino-card-corner bottom"><strong id="casino-rank-bottom">A</strong><span id="casino-suit-bottom">♠</span></div>
+                </article>
+              </div>
+
+              <div class="dealt-area">
+                <span class="dealt-label">Cards out</span>
+                <div class="dealt-cards" id="casino-dealt-cards" aria-label="Cards already dealt"></div>
+              </div>
+
+              <div class="casino-paused-overlay" id="casino-paused-overlay" hidden>
+                <span>Ⅱ</span><strong>Table paused</strong><small>Your count is safe.</small>
+              </div>
+
+              <form class="casino-count-prompt" id="casino-count-prompt" hidden>
+                <p class="eyebrow">Count check</p>
+                <h2>What’s the running count?</h2>
+                <p id="casino-prompt-copy">Cards 1–5 are out.</p>
+                <div class="count-stepper">
+                  <button type="button" id="casino-minus" aria-label="Decrease count">−</button>
+                  <input id="casino-count-input" type="number" value="0" min="-20" max="20" inputmode="numeric" aria-label="Running count" />
+                  <button type="button" id="casino-plus" aria-label="Increase count">+</button>
+                </div>
+                <button class="casino-submit" type="submit">Lock in count</button>
+                <div class="casino-prompt-feedback" id="casino-prompt-feedback" role="status"></div>
+              </form>
+            </div>
+          </div>
+
+          <div class="casino-note"><span>How it works</span> Twenty cards, four checkpoints. Keep a single Hi-Lo running count and enter it whenever the dealer pauses.</div>
+        </section>
+
+        <section class="view" id="progress-view" data-view="progress" hidden>
+          <div class="page-heading progress-heading">
+            <div><p class="eyebrow">Your progress</p><h1>Sharper every session.</h1><p>Your practice is stored on this device.</p></div>
+            <button class="primary-button" data-nav="practice">Practice now <span>→</span></button>
+          </div>
+
+          <div class="stat-grid">
+            <article class="stat-card featured-stat"><span class="stat-icon">◎</span><small>Overall accuracy</small><strong id="overall-accuracy">—</strong><p id="accuracy-note">Complete your first session to set a baseline.</p></article>
+            <article class="stat-card"><span class="stat-icon">♠</span><small>Cards counted</small><strong id="cards-counted">0</strong><p>Every card builds recognition.</p></article>
+            <article class="stat-card"><span class="stat-icon">↗</span><small>Best streak</small><strong id="best-streak">0</strong><p>Correct cards in a row.</p></article>
+            <article class="stat-card"><span class="stat-icon">◆</span><small>Practice days</small><strong id="practice-days">1</strong><p>Consistency beats cramming.</p></article>
+          </div>
+
+          <div class="progress-lower-grid">
+            <article class="history-card">
+              <div class="section-title"><div><p class="eyebrow">Recent work</p><h2>Session history</h2></div><span id="session-total">0 sessions</span></div>
+              <div id="history-list" class="history-list"></div>
+            </article>
+            <article class="mastery-card">
+              <p class="eyebrow">Hi-Lo mastery</p><h2>Card groups</h2>
+              <div class="mastery-row"><span class="mastery-dot low-dot">+1</span><div><strong>Low cards</strong><small>2, 3, 4, 5, 6</small></div><b id="low-mastery">—</b></div>
+              <div class="mastery-row"><span class="mastery-dot neutral-dot">0</span><div><strong>Neutral cards</strong><small>7, 8, 9</small></div><b id="neutral-mastery">—</b></div>
+              <div class="mastery-row"><span class="mastery-dot high-dot">−1</span><div><strong>High cards</strong><small>10, J, Q, K, A</small></div><b id="high-mastery">—</b></div>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <nav class="mobile-nav" aria-label="Mobile navigation">
+        <button data-nav="learn"><span aria-hidden="true">◇</span>Learn</button>
+        <button class="active" data-nav="practice"><span aria-hidden="true">♠</span>Practice</button>
+        <button data-nav="casino"><span aria-hidden="true">◆</span>Casino</button>
+        <button data-nav="progress"><span aria-hidden="true">↗</span>Progress</button>
+      </nav>
+    </div>
+
+    <dialog id="session-dialog">
+      <div class="dialog-symbol">♠</div>
+      <p class="eyebrow">Session complete</p>
+      <h2 id="dialog-title">Nice work.</h2>
+      <p id="dialog-copy"></p>
+      <div class="dialog-stats"><span><small>Accuracy</small><strong id="dialog-accuracy">0%</strong></span><span><small>Best streak</small><strong id="dialog-streak">0</strong></span></div>
+      <div class="dialog-actions"><button class="secondary-button" id="view-progress">View progress</button><button class="primary-button" id="practice-again">Go again <span>↻</span></button></div>
+    </dialog>
+
+    <dialog id="casino-result-dialog">
+      <div class="dialog-symbol">◆</div>
+      <p class="eyebrow">Shoe complete</p>
+      <h2 id="casino-result-title">Table sharp.</h2>
+      <p id="casino-result-copy">You held the count through every checkpoint.</p>
+      <div class="dialog-stats"><span><small>Count accuracy</small><strong id="casino-result-accuracy">0%</strong></span><span><small>Final count</small><strong id="casino-result-count">0</strong></span></div>
+      <div class="dialog-actions"><button class="secondary-button" id="casino-leave">Leave table</button><button class="primary-button" id="casino-again">New shoe <span>↻</span></button></div>
+    </dialog>
+
+    <dialog class="install-dialog" id="install-dialog">
+      <img src="assets/apple-touch-icon.png" width="76" height="76" alt="Counted app icon" />
+      <p class="eyebrow">Install Counted</p>
+      <h2>Train from your home screen.</h2>
+      <p class="install-intro">It opens like a native app and keeps the core trainer available offline.</p>
+      <ol class="install-steps" id="ios-install-steps">
+        <li><span>1</span><div><strong>Open in Safari</strong><small>Use Safari on your iPhone for installation.</small></div></li>
+        <li><span>2</span><div><strong>Tap the Share button</strong><small>The square with the upward arrow.</small></div></li>
+        <li><span>3</span><div><strong>Add to Home Screen</strong><small>Choose Add, then launch Counted from its icon.</small></div></li>
+      </ol>
+      <button class="primary-button native-install-button" id="native-install-button" hidden>Install app</button>
+      <button class="secondary-button install-dismiss" id="install-dismiss">Got it</button>
+    </dialog>
+
+    <div class="app-toast" id="app-toast" role="status" hidden><span id="app-toast-copy">Ready offline.</span><button id="app-toast-close" aria-label="Dismiss">×</button></div>
+
+    <script src="app.js?v=10" defer></script>
+  </body>
+</html>
