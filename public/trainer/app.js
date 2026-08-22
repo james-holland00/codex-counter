@@ -9,7 +9,6 @@ const strategyActions = {
 };
 const basicStrategy = {
   hard: {
-    title: "Hard total",
     rows: [
       ["17+", "SSSSSSSSSS"],
       ["13–16", "SSSSSHHHHH"],
@@ -21,7 +20,6 @@ const basicStrategy = {
     ],
   },
   soft: {
-    title: "Your hand",
     rows: [
       ["A,9", "SSSSSSSSSS"],
       ["A,8", "SSSSSSSSSS"],
@@ -32,7 +30,6 @@ const basicStrategy = {
     ],
   },
   pairs: {
-    title: "Your pair",
     rows: [
       ["A,A", "PPPPPPPPPP"],
       ["10,10", "SSSSSSSSSS"],
@@ -98,10 +95,24 @@ let sessionStreak = 0;
 let sessionBestStreak = 0;
 let runningCount = 0;
 let locked = false;
-let soundOn = true;
-let casinoDeck = [];
-let casinoIndex = 0;
+let soundOn = loadSoundPreference();
+let audioContext = null;
+const casinoSettingsKey = "counted-casino-rules-v1";
+const defaultCasinoSettings = { autoPlayers: 2, decks: 6, soft17: "stand", doubleAfterSplit: true, surrender: true };
+let casinoSettings = loadCasinoSettings();
+let casinoShoe = [];
+let casinoShoeIndex = 0;
+let casinoCutIndex = 0;
 let casinoRunningCount = 0;
+let casinoRound = 0;
+let casinoCompletedRounds = 0;
+let casinoDealerHand = [];
+let casinoSeats = [];
+let casinoUserSeat = null;
+let casinoUserHandIndex = 0;
+let casinoWins = 0;
+let casinoLosses = 0;
+let casinoPushes = 0;
 let casinoCheckpoints = 0;
 let casinoCorrect = 0;
 let casinoSpeed = 950;
@@ -110,11 +121,14 @@ let casinoPlaying = false;
 let casinoPaused = false;
 let casinoAwaitingCount = false;
 let casinoSubmitting = false;
+let casinoActionLocked = false;
+let casinoRunToken = 0;
+let casinoCheckDue = false;
+let casinoPhase = "idle";
 let trueCountIndex = 0;
 let trueCountStreak = 0;
 let trueCountLocked = false;
 let trueCountTimer = null;
-let deferredInstallPrompt = null;
 let appToastTimer = null;
 let screenWakeLock = null;
 let flashDeck = [];
@@ -138,6 +152,7 @@ function applyTheme(theme, persist = true) {
   document.documentElement.dataset.theme = theme;
   $("#theme-toggle").setAttribute("aria-pressed", String(isDark));
   $("#theme-toggle").setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+  $("#theme-setting-value").textContent = isDark ? "Dark" : "Light";
   $("#theme-color").setAttribute("content", isDark ? "#081611" : "#f3f0e8");
   if (persist) localStorage.setItem("counted-theme", theme);
 }
@@ -150,7 +165,7 @@ function renderStrategyChart(type = "hard") {
   table.setAttribute("aria-labelledby", `${type}-tab`);
   table.innerHTML = `
     <caption class="sr-only">${type} basic strategy chart for dealer upcards 2 through ace</caption>
-    <thead><tr><th scope="col">${chart.title}</th>${dealerCards.map((card) => `<th scope="col">${card}</th>`).join("")}</tr></thead>
+    <thead><tr><th scope="col">Your hand</th>${dealerCards.map((card) => `<th scope="col">${card}</th>`).join("")}</tr></thead>
     <tbody>${chart.rows.map(([hand, actions]) => `
       <tr><th scope="row">${hand}</th>${[...actions].map((action) => {
         const detail = strategyActions[action];
@@ -190,7 +205,7 @@ function answerTrueCount(value) {
   const feedback = $("#true-count-feedback");
   feedback.textContent = isCorrect ? "Correct — keep converting." : `${signedCount(scenario.running)} ÷ ${scenario.decks} = ${signedCount(scenario.answer)}.`;
   feedback.className = `true-count-feedback ${isCorrect ? "correct" : "wrong"}`;
-  playTone(isCorrect);
+  playSound(isCorrect ? "correct" : "wrong");
   awardXP(isCorrect ? 6 : 1);
   if (navigator.vibrate) navigator.vibrate(isCorrect ? 20 : [25, 35, 25]);
 
@@ -208,15 +223,10 @@ function showAppToast(message, duration = 3200) {
 }
 
 function isStandaloneApp() {
-  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-}
-
-function openInstallDialog() {
-  if (isStandaloneApp()) {
-    showAppToast("Counted is already installed.");
-    return;
-  }
-  $("#install-dialog").showModal();
+  return window.Capacitor?.isNativePlatform?.() === true
+    || window.location.protocol === "capacitor:"
+    || window.matchMedia("(display-mode: standalone)").matches
+    || window.navigator.standalone === true;
 }
 
 async function requestScreenWakeLock() {
@@ -306,13 +316,33 @@ function makeDeck() {
   return cards.slice(0, sessionLength);
 }
 
+function loadCasinoSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(casinoSettingsKey));
+    if (!saved) return { ...defaultCasinoSettings };
+    return {
+      autoPlayers: [0, 1, 2, 3].includes(Number(saved.autoPlayers)) ? Number(saved.autoPlayers) : defaultCasinoSettings.autoPlayers,
+      decks: [1, 2, 6, 8].includes(Number(saved.decks)) ? Number(saved.decks) : defaultCasinoSettings.decks,
+      soft17: saved.soft17 === "hit" ? "hit" : "stand",
+      doubleAfterSplit: saved.doubleAfterSplit !== false,
+      surrender: saved.surrender !== false,
+    };
+  } catch {
+    return { ...defaultCasinoSettings };
+  }
+}
+
+function saveCasinoSettings() {
+  try { localStorage.setItem(casinoSettingsKey, JSON.stringify(casinoSettings)); } catch { /* Rules remain in memory. */ }
+}
+
 function makeCasinoDeck() {
-  const cards = suits.flatMap((suit) => ranks.map((rank) => ({ rank, suit })));
+  const cards = Array.from({ length: casinoSettings.decks }, () => suits.flatMap((suit) => ranks.map((rank) => ({ rank, suit })))).flat();
   for (let i = cards.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     [cards[i], cards[j]] = [cards[j], cards[i]];
   }
-  return cards.slice(0, 20);
+  return cards;
 }
 
 function makeFlashDeck() {
@@ -328,42 +358,413 @@ function signedCount(value) {
   return value > 0 ? `+${value}` : String(value);
 }
 
+function casinoRankValue(rank) {
+  if (rank === "A") return 11;
+  return ["10", "J", "Q", "K"].includes(rank) ? 10 : Number(rank);
+}
+
+function casinoHandValue(cards) {
+  let total = cards.reduce((sum, card) => sum + casinoRankValue(card.rank), 0);
+  let aces = cards.filter((card) => card.rank === "A").length;
+  while (total > 21 && aces > 0) {
+    total -= 10;
+    aces -= 1;
+  }
+  return { total, soft: aces > 0 };
+}
+
+function makeCasinoHand(cards = [], fromSplit = false) {
+  return { cards, fromSplit, status: "", outcome: "", doubled: false };
+}
+
+function makeCasinoSeat(name, isUser = false) {
+  return { name, isUser, hands: [makeCasinoHand()] };
+}
+
+function drawCasinoCard(visible = true) {
+  const source = casinoShoe[casinoShoeIndex];
+  if (!source) return null;
+  casinoShoeIndex += 1;
+  const card = { ...source, hidden: !visible, counted: visible, isNew: true };
+  if (visible) casinoRunningCount += getValue(card.rank);
+  return card;
+}
+
+function revealCasinoCard(card) {
+  if (!card || !card.hidden) return;
+  card.hidden = false;
+  card.isNew = true;
+  if (!card.counted) {
+    casinoRunningCount += getValue(card.rank);
+    card.counted = true;
+  }
+}
+
+function casinoCardMarkup(card) {
+  if (card.hidden) return `<span class="table-card back${card.isNew ? " deal-in" : ""}" aria-label="Face-down card"><i>♠</i></span>`;
+  const red = card.suit === "♥" || card.suit === "♦";
+  return `<span class="table-card${red ? " red" : ""}${card.isNew ? " deal-in" : ""}" aria-label="${card.rank} of ${card.suit}"><strong>${card.rank}</strong><span>${card.suit}</span></span>`;
+}
+
+function casinoHandStatus(hand) {
+  if (hand.outcome) return hand.outcome;
+  if (hand.status === "surrendered") return "Surrender";
+  if (hand.status === "blackjack") return "Blackjack";
+  const value = casinoHandValue(hand.cards);
+  if (value.total > 21) return "Bust";
+  return hand.cards.length ? `${value.total}${value.soft ? " soft" : ""}` : "—";
+}
+
+function renderCasinoTable() {
+  const visibleDealerCards = casinoDealerHand.filter((card) => !card.hidden);
+  const dealerValue = casinoHandValue(visibleDealerCards);
+  $("#casino-dealer-total").textContent = visibleDealerCards.length ? `${dealerValue.total}${casinoDealerHand.some((card) => card.hidden) ? "+?" : ""}` : "—";
+  $("#casino-dealer-hand").innerHTML = casinoDealerHand.length
+    ? casinoDealerHand.map(casinoCardMarkup).join("")
+    : '<span class="table-card back" aria-label="Face-down card"><i>♠</i></span>';
+
+  const seats = casinoSeats.length ? casinoSeats : [makeCasinoSeat("You", true)];
+  $("#casino-seats").style.setProperty("--seat-count", seats.length);
+  $("#casino-seats").innerHTML = seats.map((seat) => {
+    const hands = seat.hands.map((hand, index) => {
+      const active = seat.isUser && casinoPhase === "player" && index === casinoUserHandIndex;
+      return `<div class="seat-hand${active ? " active" : ""}"><div class="table-hand">${hand.cards.length ? hand.cards.map(casinoCardMarkup).join("") : '<span class="table-card back"><i>♠</i></span>'}</div><small>${casinoHandStatus(hand)}</small></div>`;
+    }).join("");
+    const outcomes = seat.hands.map((hand) => hand.outcome).filter(Boolean).join(" · ");
+    return `<div class="casino-seat${seat.isUser ? " user-seat" : " auto-seat"}${casinoSeats.length ? "" : " idle-seat"}"><span>${seat.name}</span><div class="seat-hands">${hands}</div><div class="casino-outcome">${outcomes}</div></div>`;
+  }).join("");
+
+  casinoDealerHand.forEach((card) => { card.isNew = false; });
+  casinoSeats.forEach((seat) => seat.hands.forEach((hand) => hand.cards.forEach((card) => { card.isNew = false; })));
+  updateCasinoUI();
+}
+
 function updateCasinoUI() {
-  $("#casino-cards-left").textContent = 20 - casinoIndex;
-  $("#casino-checkpoint").textContent = casinoCheckpoints;
+  const decksLeft = casinoShoe.length ? Math.max(0, (casinoShoe.length - casinoShoeIndex) / 52) : casinoSettings.decks;
+  $("#casino-round").textContent = casinoRound;
+  $("#casino-shoe-depth").textContent = `${decksLeft.toFixed(1)}d`;
+  $("#casino-record").textContent = `${casinoWins}–${casinoLosses}–${casinoPushes}`;
 }
 
 function setCasinoControlsDisabled(disabled) {
-  ["#casino-minus", "#casino-plus", "#casino-count-input", ".casino-submit"].forEach((selector) => {
-    $(selector).disabled = disabled;
+  ["#casino-minus", "#casino-plus", "#casino-count-input", ".casino-submit"].forEach((selector) => { $(selector).disabled = disabled; });
+}
+
+function casinoWait(multiplier = .38, token = casinoRunToken) {
+  window.clearTimeout(casinoTimer);
+  return new Promise((resolve) => {
+    casinoTimer = window.setTimeout(() => resolve(token === casinoRunToken), Math.max(110, Math.round(casinoSpeed * multiplier)));
   });
 }
 
-function scheduleCasinoDeal(delay = casinoSpeed) {
-  window.clearTimeout(casinoTimer);
-  if (!casinoPlaying || casinoPaused || casinoAwaitingCount) return;
-  casinoTimer = window.setTimeout(dealCasinoCard, delay);
+async function dealCasinoCardTo(cards, visible, token) {
+  const card = drawCasinoCard(visible);
+  if (!card || token !== casinoRunToken) return false;
+  cards.push(card);
+  renderCasinoTable();
+  playSound("deal");
+  return casinoWait(.38, token);
 }
 
-function renderCasinoCard(card) {
-  [$("#casino-rank-top"), $("#casino-rank-bottom")].forEach((el) => { el.textContent = card.rank; });
-  [$("#casino-suit-top"), $("#casino-suit-bottom"), $("#casino-card-suit")].forEach((el) => { el.textContent = card.suit; });
-  const cardElement = $("#casino-card");
-  cardElement.classList.remove("face-down", "deal-in");
-  cardElement.classList.toggle("red", card.suit === "♥" || card.suit === "♦");
-  void cardElement.offsetWidth;
-  cardElement.classList.add("deal-in");
+function canCasinoSplit(hand, seat) {
+  if (hand.cards.length !== 2 || seat.hands.length >= 4) return false;
+  return casinoRankValue(hand.cards[0].rank) === casinoRankValue(hand.cards[1].rank);
+}
 
-  const miniCard = document.createElement("span");
-  miniCard.className = `dealt-mini-card${card.suit === "♥" || card.suit === "♦" ? " red" : ""}`;
-  miniCard.innerHTML = `${card.rank}<span>${card.suit}</span>`;
-  $("#casino-dealt-cards").appendChild(miniCard);
+function canCasinoDouble(hand) {
+  return hand.cards.length === 2 && (!hand.fromSplit || casinoSettings.doubleAfterSplit);
+}
+
+function autoCasinoDecision(hand, dealerCard, seat) {
+  const dealer = casinoRankValue(dealerCard.rank);
+  const value = casinoHandValue(hand.cards);
+  const pair = canCasinoSplit(hand, seat) ? casinoRankValue(hand.cards[0].rank) : 0;
+  if (casinoSettings.surrender && !hand.fromSplit && hand.cards.length === 2 && ((value.total === 16 && dealer >= 9) || (value.total === 15 && dealer === 10))) return "surrender";
+  if (pair === 11 || pair === 8) return "split";
+  if (pair === 10) return "stand";
+  if (pair === 9) return [2, 3, 4, 5, 6, 8, 9].includes(dealer) ? "split" : "stand";
+  if (pair === 7 && dealer <= 7) return "split";
+  if (pair === 6 && dealer <= 6 && (casinoSettings.doubleAfterSplit || dealer >= 3)) return "split";
+  if ((pair === 2 || pair === 3) && dealer <= 7 && (casinoSettings.doubleAfterSplit || dealer >= 4)) return "split";
+  if (pair === 4 && casinoSettings.doubleAfterSplit && [5, 6].includes(dealer)) return "split";
+  if (value.soft) {
+    if (value.total >= 19) return "stand";
+    if (value.total === 18) return canCasinoDouble(hand) && dealer >= 3 && dealer <= 6 ? "double" : dealer <= 8 ? "stand" : "hit";
+    if (value.total === 17) return canCasinoDouble(hand) && dealer >= 3 && dealer <= 6 ? "double" : "hit";
+    if (value.total >= 15) return canCasinoDouble(hand) && dealer >= 4 && dealer <= 6 ? "double" : "hit";
+    return canCasinoDouble(hand) && dealer >= 5 && dealer <= 6 ? "double" : "hit";
+  }
+  if (value.total >= 17) return "stand";
+  if (value.total >= 13) return dealer <= 6 ? "stand" : "hit";
+  if (value.total === 12) return dealer >= 4 && dealer <= 6 ? "stand" : "hit";
+  if (value.total === 11) return canCasinoDouble(hand) && dealer <= 10 ? "double" : "hit";
+  if (value.total === 10) return canCasinoDouble(hand) && dealer <= 9 ? "double" : "hit";
+  if (value.total === 9) return canCasinoDouble(hand) && dealer >= 3 && dealer <= 6 ? "double" : "hit";
+  return "hit";
+}
+
+async function splitCasinoHand(seat, index, token) {
+  const original = seat.hands[index];
+  const first = makeCasinoHand([original.cards[0]], true);
+  const second = makeCasinoHand([original.cards[1]], true);
+  seat.hands.splice(index, 1, first, second);
+  renderCasinoTable();
+  if (!await dealCasinoCardTo(first.cards, true, token)) return false;
+  if (!await dealCasinoCardTo(second.cards, true, token)) return false;
+  if (first.cards[0].rank === "A") {
+    first.status = "stand";
+    second.status = "stand";
+    renderCasinoTable();
+  }
+  return true;
+}
+
+async function playAutomaticCasinoSeat(seat, token) {
+  for (let index = 0; index < seat.hands.length && token === casinoRunToken; index += 1) {
+    let hand = seat.hands[index];
+    while (!hand.status && token === casinoRunToken) {
+      const value = casinoHandValue(hand.cards);
+      if (value.total > 21) { hand.status = "bust"; break; }
+      if (value.total === 21) { hand.status = "stand"; break; }
+      const action = autoCasinoDecision(hand, casinoDealerHand[0], seat);
+      if (action === "split") {
+        if (!await splitCasinoHand(seat, index, token)) return;
+        hand = seat.hands[index];
+      } else if (action === "double") {
+        hand.doubled = true;
+        if (!await dealCasinoCardTo(hand.cards, true, token)) return;
+        hand.status = casinoHandValue(hand.cards).total > 21 ? "bust" : "stand";
+      } else if (action === "hit") {
+        if (!await dealCasinoCardTo(hand.cards, true, token)) return;
+      } else {
+        hand.status = action === "surrender" ? "surrendered" : "stand";
+      }
+      renderCasinoTable();
+    }
+  }
+}
+
+function casinoDealerShouldHit() {
+  const value = casinoHandValue(casinoDealerHand);
+  return value.total < 17 || (value.total === 17 && value.soft && casinoSettings.soft17 === "hit");
+}
+
+function updateCasinoActions() {
+  const hand = casinoUserSeat?.hands[casinoUserHandIndex];
+  const actions = $("#casino-actions");
+  if (!hand || casinoPhase !== "player") {
+    actions.hidden = true;
+    return;
+  }
+  actions.hidden = false;
+  $(".casino-round-bar").hidden = true;
+  const doubleButton = $('[data-casino-action="double"]');
+  const splitButton = $('[data-casino-action="split"]');
+  const surrenderButton = $('[data-casino-action="surrender"]');
+  doubleButton.disabled = !canCasinoDouble(hand) || casinoActionLocked;
+  splitButton.disabled = !canCasinoSplit(hand, casinoUserSeat) || casinoActionLocked;
+  surrenderButton.hidden = !casinoSettings.surrender;
+  surrenderButton.disabled = hand.fromSplit || hand.cards.length !== 2 || casinoActionLocked;
+  actions.style.setProperty("--action-count", casinoSettings.surrender ? 5 : 4);
+  $$('[data-casino-action="hit"], [data-casino-action="stand"]').forEach((button) => { button.disabled = casinoActionLocked; });
+}
+
+async function beginCasinoPlayerTurn(token = casinoRunToken) {
+  if (token !== casinoRunToken) return;
+  const next = casinoUserSeat.hands.findIndex((hand, index) => index >= casinoUserHandIndex && !hand.status);
+  if (next === -1) {
+    await playCasinoDealer(token);
+    return;
+  }
+  casinoUserHandIndex = next;
+  casinoPhase = "player";
+  $("#casino-status").textContent = casinoUserSeat.hands.length > 1 ? `Your hand ${next + 1}` : "Your decision";
+  $("#casino-round-message").textContent = "Choose the correct blackjack action while holding the count.";
+  renderCasinoTable();
+  updateCasinoActions();
+}
+
+async function handleCasinoAction(action) {
+  if (casinoPhase !== "player" || casinoActionLocked) return;
+  const hand = casinoUserSeat.hands[casinoUserHandIndex];
+  if (!hand) return;
+  if (action === "double" && !canCasinoDouble(hand)) return;
+  if (action === "split" && !canCasinoSplit(hand, casinoUserSeat)) return;
+  if (action === "surrender" && (!casinoSettings.surrender || hand.fromSplit || hand.cards.length !== 2)) return;
+
+  casinoActionLocked = true;
+  updateCasinoActions();
+  const token = casinoRunToken;
+  if (action === "hit") {
+    await dealCasinoCardTo(hand.cards, true, token);
+    const total = casinoHandValue(hand.cards).total;
+    if (total >= 21) hand.status = total > 21 ? "bust" : "stand";
+  } else if (action === "stand") {
+    hand.status = "stand";
+  } else if (action === "double") {
+    hand.doubled = true;
+    await dealCasinoCardTo(hand.cards, true, token);
+    hand.status = casinoHandValue(hand.cards).total > 21 ? "bust" : "stand";
+  } else if (action === "split") {
+    await splitCasinoHand(casinoUserSeat, casinoUserHandIndex, token);
+  } else if (action === "surrender") {
+    hand.status = "surrendered";
+  }
+  casinoActionLocked = false;
+  renderCasinoTable();
+  if (action === "split" && !casinoUserSeat.hands[casinoUserHandIndex].status) {
+    updateCasinoActions();
+  } else if (casinoUserSeat.hands[casinoUserHandIndex].status) {
+    casinoUserHandIndex += 1;
+    await beginCasinoPlayerTurn(token);
+  } else {
+    updateCasinoActions();
+  }
+  playSound("tap");
+}
+
+function resolveCasinoHands() {
+  const dealer = casinoHandValue(casinoDealerHand);
+  const dealerBlackjack = dealer.total === 21 && casinoDealerHand.length === 2;
+  casinoSeats.forEach((seat) => seat.hands.forEach((hand) => {
+    const value = casinoHandValue(hand.cards);
+    const blackjack = value.total === 21 && hand.cards.length === 2 && !hand.fromSplit;
+    if (hand.status === "surrendered") hand.outcome = "Surrender";
+    else if (value.total > 21) hand.outcome = "Loss";
+    else if (dealerBlackjack) hand.outcome = blackjack ? "Push" : "Loss";
+    else if (blackjack) hand.outcome = "Blackjack";
+    else if (dealer.total > 21 || value.total > dealer.total) hand.outcome = "Win";
+    else if (value.total < dealer.total) hand.outcome = "Loss";
+    else hand.outcome = "Push";
+  }));
+}
+
+function finishCasinoRound() {
+  resolveCasinoHands();
+  casinoPhase = "round-end";
+  casinoCompletedRounds += 1;
+  $("#casino-actions").hidden = true;
+  casinoUserSeat.hands.forEach((hand) => {
+    if (["Win", "Blackjack"].includes(hand.outcome)) casinoWins += 1;
+    else if (hand.outcome === "Push") casinoPushes += 1;
+    else casinoLosses += 1;
+  });
+  casinoCheckDue = casinoRound % 3 === 0 || casinoShoeIndex >= casinoCutIndex;
+  const summary = casinoUserSeat.hands.map((hand) => hand.outcome).join(" · ");
+  $("#casino-status").textContent = "Round complete";
+  $(".casino-live").classList.remove("dealing");
+  $(".casino-round-bar").hidden = false;
+  $("#casino-round-message").textContent = summary || "Round complete.";
+  $("#casino-next-round").hidden = false;
+  $("#casino-next-round").innerHTML = casinoCheckDue ? `Count check <span>→</span>` : `Next hand <span>→</span>`;
+  renderCasinoTable();
+}
+
+async function playCasinoDealer(token) {
+  if (token !== casinoRunToken) return;
+  casinoPhase = "dealer";
+  $("#casino-actions").hidden = true;
+  $(".casino-round-bar").hidden = false;
+  $("#casino-round-message").textContent = "Dealer reveals and completes the hand.";
+  $("#casino-status").textContent = "Dealer plays";
+  revealCasinoCard(casinoDealerHand[1]);
+  renderCasinoTable();
+  playSound("deal");
+  if (!await casinoWait(.5, token)) return;
+
+  const liveHands = casinoSeats.some((seat) => seat.hands.some((hand) => !["bust", "surrendered"].includes(hand.status)));
+  while (liveHands && casinoDealerShouldHit() && token === casinoRunToken) {
+    if (!await dealCasinoCardTo(casinoDealerHand, true, token)) return;
+  }
+  finishCasinoRound();
+}
+
+async function startCasinoRound() {
+  const token = casinoRunToken;
+  if (!casinoPlaying || token !== casinoRunToken) return;
+  if (casinoShoeIndex >= casinoCutIndex) {
+    finishCasinoShoe();
+    return;
+  }
+
+  casinoRound += 1;
+  casinoPhase = "dealing";
+  casinoDealerHand = [];
+  casinoSeats = Array.from({ length: casinoSettings.autoPlayers }, (_, index) => makeCasinoSeat(`Player ${index + 1}`));
+  casinoUserSeat = makeCasinoSeat("You", true);
+  casinoSeats.push(casinoUserSeat);
+  casinoUserHandIndex = 0;
+  casinoActionLocked = false;
+  casinoCheckDue = false;
+  $("#casino-count-prompt").hidden = true;
+  $("#casino-actions").hidden = true;
+  $(".casino-round-bar").hidden = false;
+  $("#casino-next-round").hidden = true;
+  $("#casino-round-message").textContent = "Cards are moving. Count every exposed card.";
+  $("#casino-status").textContent = "Dealing round";
+  $(".casino-live").classList.add("dealing");
+  renderCasinoTable();
+
+  for (let pass = 0; pass < 2 && token === casinoRunToken; pass += 1) {
+    for (const seat of casinoSeats) {
+      if (!await dealCasinoCardTo(seat.hands[0].cards, true, token)) return;
+    }
+    if (!await dealCasinoCardTo(casinoDealerHand, pass === 0, token)) return;
+  }
+
+  casinoSeats.forEach((seat) => {
+    const value = casinoHandValue(seat.hands[0].cards);
+    if (value.total === 21) seat.hands[0].status = "blackjack";
+  });
+  const dealerNatural = casinoHandValue(casinoDealerHand).total === 21;
+  if (dealerNatural) {
+    await playCasinoDealer(token);
+    return;
+  }
+  for (const seat of casinoSeats.filter((seat) => !seat.isUser)) {
+    await playAutomaticCasinoSeat(seat, token);
+    if (token !== casinoRunToken) return;
+  }
+  await beginCasinoPlayerTurn(token);
+}
+
+function startCasinoShoe() {
+  casinoRunToken += 1;
+  window.clearTimeout(casinoTimer);
+  casinoShoe = makeCasinoDeck();
+  casinoShoeIndex = 0;
+  casinoCutIndex = Math.floor(casinoShoe.length * .75);
+  casinoRunningCount = 0;
+  casinoRound = 0;
+  casinoCompletedRounds = 0;
+  casinoWins = 0;
+  casinoLosses = 0;
+  casinoPushes = 0;
+  casinoCheckpoints = 0;
+  casinoCorrect = 0;
+  casinoPlaying = true;
+  casinoPaused = false;
+  casinoAwaitingCount = false;
+  casinoSubmitting = false;
+  casinoPhase = "dealing";
+  $("#casino-result-dialog").open && $("#casino-result-dialog").close();
+  $("#casino-count-prompt").hidden = true;
+  $("#casino-rules-open").disabled = true;
+  $("#casino-end").disabled = false;
+  $("#casino-start span").textContent = "New shoe";
+  $("#casino-start").setAttribute("aria-label", "Start a new shoe");
+  playSound("start");
+  requestScreenWakeLock();
+  updateCasinoUI();
+  startCasinoRound();
 }
 
 function showCasinoCountPrompt() {
-  if (!casinoPlaying || !casinoAwaitingCount) return;
+  if (!casinoPlaying || !casinoCheckDue) return;
+  casinoAwaitingCount = true;
+  casinoPhase = "count";
   $("#casino-count-input").value = "0";
-  $("#casino-prompt-copy").textContent = `Cards ${casinoIndex - 4}–${casinoIndex} are out.`;
+  $("#casino-prompt-copy").textContent = `Round ${casinoRound} is complete with ${((casinoShoe.length - casinoShoeIndex) / 52).toFixed(1)} decks left.`;
   $("#casino-prompt-feedback").textContent = "";
   $("#casino-prompt-feedback").classList.remove("wrong");
   setCasinoControlsDisabled(false);
@@ -372,97 +773,51 @@ function showCasinoCountPrompt() {
   $("#casino-count-input").select();
 }
 
-function dealCasinoCard() {
-  if (!casinoPlaying || casinoPaused || casinoAwaitingCount) return;
-  const card = casinoDeck[casinoIndex];
-  if (!card) return;
-
-  casinoRunningCount += getValue(card.rank);
-  renderCasinoCard(card);
-  casinoIndex += 1;
-  updateCasinoUI();
-
-  if (casinoIndex % 5 === 0) {
-    casinoAwaitingCount = true;
-    $("#casino-status").textContent = "Count check";
-    $(".casino-live").classList.remove("dealing");
-    $("#casino-pause").disabled = true;
-    casinoTimer = window.setTimeout(showCasinoCountPrompt, Math.min(500, casinoSpeed / 2));
-  } else {
-    scheduleCasinoDeal();
-  }
-}
-
-function startCasinoShoe() {
-  window.clearTimeout(casinoTimer);
-  casinoDeck = makeCasinoDeck();
-  casinoIndex = 0;
-  casinoRunningCount = 0;
-  casinoCheckpoints = 0;
-  casinoCorrect = 0;
-  casinoPlaying = true;
-  casinoPaused = false;
-  casinoAwaitingCount = false;
-  casinoSubmitting = false;
-
-  $("#casino-dealt-cards").innerHTML = "";
-  $("#casino-count-prompt").hidden = true;
-  $("#casino-paused-overlay").hidden = true;
-  $("#casino-card").className = "casino-card face-down";
-  $("#casino-status").textContent = "Cards moving";
-  $(".casino-live").classList.add("dealing");
-  $("#casino-pause").disabled = false;
-  $("#casino-pause").innerHTML = "<span>Ⅱ</span> Pause";
-  $("#casino-start span").textContent = "Restart shoe";
-  updateCasinoUI();
-  requestScreenWakeLock();
-  scheduleCasinoDeal(450);
-}
-
-function setCasinoPaused(shouldPause) {
-  if (!casinoPlaying || casinoAwaitingCount || casinoPaused === shouldPause) return;
-  casinoPaused = shouldPause;
-  window.clearTimeout(casinoTimer);
-  $("#casino-paused-overlay").hidden = !casinoPaused;
-  $("#casino-status").textContent = casinoPaused ? "Table paused" : "Cards moving";
-  $(".casino-live").classList.toggle("dealing", !casinoPaused);
-  $("#casino-pause").innerHTML = casinoPaused ? "<span>▶</span> Resume" : "<span>Ⅱ</span> Pause";
-  if (casinoPaused) releaseScreenWakeLock();
-  else {
-    requestScreenWakeLock();
-    scheduleCasinoDeal(350);
-  }
+function advanceCasinoRound() {
+  if (!casinoPlaying || casinoPhase !== "round-end") return;
+  if (casinoCheckDue) showCasinoCountPrompt();
+  else startCasinoRound();
 }
 
 function adjustCasinoCount(delta) {
   const input = $("#casino-count-input");
-  const next = Math.max(-20, Math.min(20, Number(input.value || 0) + delta));
-  input.value = next;
+  input.value = Math.max(-100, Math.min(100, Number(input.value || 0) + delta));
 }
 
 function finishCasinoShoe() {
+  if (!casinoPlaying) return;
+  casinoRunToken += 1;
   casinoPlaying = false;
   casinoAwaitingCount = false;
+  casinoPhase = "complete";
   window.clearTimeout(casinoTimer);
+  $("#casino-count-prompt").hidden = true;
+  $("#casino-actions").hidden = true;
+  $(".casino-round-bar").hidden = false;
+  $("#casino-next-round").hidden = true;
+  $("#casino-round-message").textContent = "Shoe complete. Review the session and deal again when ready.";
   $("#casino-status").textContent = "Shoe complete";
   $(".casino-live").classList.remove("dealing");
-  $("#casino-pause").disabled = true;
+  $("#casino-end").disabled = true;
+  $("#casino-rules-open").disabled = false;
   $("#casino-start span").textContent = "Deal again";
+  $("#casino-start").setAttribute("aria-label", "Deal another shoe");
   releaseScreenWakeLock();
+  playSound("complete");
 
-  const accuracy = Math.round((casinoCorrect / 4) * 100);
+  const accuracy = casinoCheckpoints ? Math.round((casinoCorrect / casinoCheckpoints) * 100) : 0;
   const today = todayKey();
   if (!progress.practiceDates.includes(today)) progress.practiceDates.push(today);
   progress.casinoSessions += 1;
   progress.casinoBestAccuracy = Math.max(progress.casinoBestAccuracy, accuracy);
-  awardXP(accuracy === 100 ? 50 : 20);
+  awardXP(20 + casinoCorrect * 20 + casinoWins * 3);
   saveProgress();
   renderProgress();
 
-  $("#casino-result-title").textContent = accuracy === 100 ? "Table sharp." : accuracy >= 75 ? "Strong shoe." : "Stay with the count.";
-  $("#casino-result-copy").textContent = accuracy === 100 ? "You held the running count through every checkpoint." : "Review the misses, then slow the pace until the count feels automatic.";
-  $("#casino-result-accuracy").textContent = `${accuracy}%`;
-  $("#casino-result-count").textContent = signedCount(casinoRunningCount);
+  $("#casino-result-title").textContent = accuracy === 100 && casinoCheckpoints ? "Table sharp." : accuracy >= 67 ? "Strong shoe." : "Stay with the count.";
+  $("#casino-result-copy").textContent = `${casinoCompletedRounds} ${casinoCompletedRounds === 1 ? "round" : "rounds"} completed under live table rules. ${casinoCorrect} of ${casinoCheckpoints} count checks correct.`;
+  $("#casino-result-accuracy").textContent = casinoCheckpoints ? `${accuracy}%` : "—";
+  $("#casino-result-record").textContent = `${casinoWins}–${casinoLosses}–${casinoPushes}`;
   $("#casino-result-dialog").showModal();
 }
 
@@ -474,28 +829,40 @@ function submitCasinoCount(event) {
   const isCorrect = submitted === casinoRunningCount;
   casinoCheckpoints += 1;
   if (isCorrect) casinoCorrect += 1;
-  updateCasinoUI();
 
   const feedback = $("#casino-prompt-feedback");
-  feedback.textContent = isCorrect ? "Correct. Keep the count." : `The count is ${signedCount(casinoRunningCount)}.`;
+  feedback.textContent = isCorrect ? "Correct. Keep the count." : `The running count is ${signedCount(casinoRunningCount)}.`;
   feedback.classList.toggle("wrong", !isCorrect);
   setCasinoControlsDisabled(true);
-  playTone(isCorrect);
+  playSound(isCorrect ? "correct" : "wrong");
   awardXP(isCorrect ? 20 : 4);
 
   casinoTimer = window.setTimeout(() => {
     $("#casino-count-prompt").hidden = true;
     casinoSubmitting = false;
-    if (casinoIndex >= 20) {
-      finishCasinoShoe();
-    } else {
-      casinoAwaitingCount = false;
-      $("#casino-status").textContent = "Cards moving";
-      $(".casino-live").classList.add("dealing");
-      $("#casino-pause").disabled = false;
-      scheduleCasinoDeal(450);
-    }
+    casinoAwaitingCount = false;
+    casinoCheckDue = false;
+    if (casinoShoeIndex >= casinoCutIndex) finishCasinoShoe();
+    else startCasinoRound();
   }, 900);
+}
+
+function renderCasinoSettingsUI() {
+  $("#casino-decks").value = String(casinoSettings.decks);
+  $$('[data-casino-players]').forEach((button) => button.classList.toggle("active", Number(button.dataset.casinoPlayers) === casinoSettings.autoPlayers));
+  $$('[data-casino-soft17]').forEach((button) => button.classList.toggle("active", button.dataset.casinoSoft17 === casinoSettings.soft17));
+  $$('[data-casino-das]').forEach((button) => button.classList.toggle("active", (button.dataset.casinoDas === "true") === casinoSettings.doubleAfterSplit));
+  $$('[data-casino-surrender]').forEach((button) => button.classList.toggle("active", (button.dataset.casinoSurrender === "true") === casinoSettings.surrender));
+  const playerCopy = casinoSettings.autoPlayers === 0 ? "no automatic players" : `${casinoSettings.autoPlayers} automatic ${casinoSettings.autoPlayers === 1 ? "player" : "players"}`;
+  $("#casino-rules-open").setAttribute("aria-label", `Open table rules: ${casinoSettings.decks} decks, ${playerCopy}, dealer ${casinoSettings.soft17 === "hit" ? "hits" : "stands"} soft 17`);
+  updateCasinoUI();
+}
+
+function closeCasinoRules() {
+  saveCasinoSettings();
+  renderCasinoSettingsUI();
+  $("#casino-rules-dialog").close();
+  playSound("tap");
 }
 
 function getFlashDecksRemaining() {
@@ -534,6 +901,7 @@ function renderFlashCard(card) {
   cardElement.classList.toggle("red", card.suit === "♥" || card.suit === "♦");
   void cardElement.offsetWidth;
   cardElement.classList.add("flash-in");
+  if (audioContext) playSound("deal");
 }
 
 function showFlashCountPrompt() {
@@ -590,8 +958,10 @@ function startFlashSprint() {
   $("#flash-pause").disabled = false;
   $("#flash-pause").innerHTML = "<span>Ⅱ</span> Pause";
   $("#flash-start span").textContent = "Restart sprint";
+  $("#flash-start").setAttribute("aria-label", "Restart sprint");
   $("#flash-decks").disabled = true;
   updateFlashUI();
+  playSound("start");
   requestScreenWakeLock();
   scheduleFlashCard(500);
 }
@@ -604,6 +974,7 @@ function setFlashPaused(shouldPause) {
   $("#flash-status").textContent = flashPaused ? "Sprint paused" : "Cards flashing";
   $(".flash-live").classList.toggle("flashing", !flashPaused);
   $("#flash-pause").innerHTML = flashPaused ? "<span>▶</span> Resume" : "<span>Ⅱ</span> Pause";
+  playSound("tap");
   if (flashPaused) releaseScreenWakeLock();
   else {
     requestScreenWakeLock();
@@ -625,7 +996,9 @@ function finishFlashSprint() {
   $("#flash-pause").disabled = true;
   $("#flash-decks").disabled = false;
   $("#flash-start span").textContent = "Sprint again";
+  $("#flash-start").setAttribute("aria-label", "Sprint again");
   releaseScreenWakeLock();
+  playSound("complete");
 
   const accuracy = Math.round((flashCorrect / 3) * 100);
   const today = todayKey();
@@ -659,7 +1032,7 @@ function submitFlashCount(event) {
   feedback.textContent = isCorrect ? "Correct. Keep flashing." : `${signedCount(flashRunningCount)} ÷ ${decksRemaining} = ${signedCount(expected)}.`;
   feedback.classList.toggle("wrong", !isCorrect);
   setFlashControlsDisabled(true);
-  playTone(isCorrect);
+  playSound(isCorrect ? "correct" : "wrong");
   awardXP(isCorrect ? 25 : 5);
 
   flashTimer = window.setTimeout(() => {
@@ -698,6 +1071,7 @@ function renderCard() {
   $("#playing-card").classList.remove("dealing");
   void $("#playing-card").offsetWidth;
   $("#playing-card").classList.add("dealing");
+  if (audioContext) playSound("deal");
 }
 
 function updateSessionUI() {
@@ -733,7 +1107,7 @@ function answer(value) {
   runningCount += expected;
   awardXP(isCorrect ? 3 : 1);
   showFeedback(isCorrect, expected);
-  playTone(isCorrect);
+  playSound(isCorrect ? "correct" : "wrong");
   cardIndex += 1;
   updateSessionUI();
 
@@ -755,20 +1129,48 @@ function showFeedback(isCorrect, expected) {
   feedback.classList.add("show");
 }
 
-function playTone(isCorrect) {
+function loadSoundPreference() {
+  try { return localStorage.getItem("counted-sound") !== "off"; }
+  catch { return true; }
+}
+
+function updateSoundUI() {
+  const toggle = $("#sound-toggle");
+  toggle.setAttribute("aria-pressed", String(soundOn));
+  toggle.setAttribute("aria-label", soundOn ? "Turn sounds off" : "Turn sounds on");
+  $("#sound-setting-value").textContent = soundOn ? "On" : "Off";
+}
+
+function playSound(kind) {
   if (!soundOn) return;
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const context = new AudioContext();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.value = isCorrect ? 540 : 190;
-    gain.gain.setValueAtTime(0.055, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.12);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + 0.12);
+    audioContext ||= new AudioContext();
+    if (audioContext.state === "suspended") audioContext.resume();
+
+    const now = audioContext.currentTime;
+    const tones = {
+      tap: [[420, 0, .045, "sine", .018, 520]],
+      deal: [[260, 0, .065, "triangle", .016, 170]],
+      start: [[360, 0, .09, "sine", .028, 480], [540, .075, .11, "sine", .025, 680]],
+      correct: [[560, 0, .09, "sine", .038, 650], [760, .075, .11, "sine", .034, 880]],
+      wrong: [[210, 0, .14, "triangle", .035, 135]],
+      complete: [[440, 0, .1, "sine", .03, 500], [620, .09, .1, "sine", .03, 690], [840, .18, .16, "sine", .034, 920]],
+    };
+
+    (tones[kind] || tones.tap).forEach(([startHz, delay, duration, type, volume, endHz]) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      const start = now + delay;
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(startHz, start);
+      oscillator.frequency.exponentialRampToValueAtTime(endHz, start + duration);
+      gain.gain.setValueAtTime(volume, start);
+      gain.gain.exponentialRampToValueAtTime(.001, start + duration);
+      oscillator.connect(gain).connect(audioContext.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration);
+    });
   } catch { /* Sound is an optional enhancement. */ }
 }
 
@@ -782,6 +1184,7 @@ function finishSession() {
   awardXP(accuracy >= 90 ? 50 : 25);
   saveProgress();
   renderProgress();
+  playSound("complete");
 
   $("#session-progress").style.width = "100%";
   $("#dialog-title").textContent = accuracy >= 90 ? "Counted clean." : accuracy >= 75 ? "Good momentum." : "Keep building.";
@@ -792,7 +1195,6 @@ function finishSession() {
 }
 
 function navigate(viewName) {
-  if (viewName !== "casino" && casinoPlaying && !casinoPaused && !casinoAwaitingCount) setCasinoPaused(true);
   if (viewName !== "flash" && flashPlaying && !flashPaused && !flashAwaitingCount) setFlashPaused(true);
   $$(".view").forEach((view) => {
     const active = view.dataset.view === viewName;
@@ -800,6 +1202,7 @@ function navigate(viewName) {
     view.classList.toggle("active-view", active);
   });
   $$(`[data-nav]`).forEach((button) => button.classList.toggle("active", button.dataset.nav === viewName));
+  document.body.dataset.activeView = viewName;
   if (viewName === "progress") renderProgress();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -918,12 +1321,15 @@ $$(`[data-flash-speed]`).forEach((button) => button.addEventListener("click", ()
 }));
 
 $("#reset-session").addEventListener("click", startSession);
-$("#guide-toggle").addEventListener("change", (event) => document.body.classList.toggle("guide-off", !event.target.checked));
-$("#sound-toggle").addEventListener("click", (event) => {
+$("#settings-open").addEventListener("click", () => {
+  $("#settings-dialog").showModal();
+  playSound("tap");
+});
+$("#sound-toggle").addEventListener("click", () => {
   soundOn = !soundOn;
-  event.currentTarget.setAttribute("aria-pressed", soundOn);
-  event.currentTarget.setAttribute("aria-label", soundOn ? "Turn sounds off" : "Turn sounds on");
-  event.currentTarget.style.opacity = soundOn ? "1" : ".45";
+  try { localStorage.setItem("counted-sound", soundOn ? "on" : "off"); } catch { /* Preference remains in memory. */ }
+  updateSoundUI();
+  if (soundOn) playSound("tap");
 });
 $("#theme-toggle").addEventListener("click", () => {
   const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
@@ -932,12 +1338,45 @@ $("#theme-toggle").addEventListener("click", () => {
 $("#practice-again").addEventListener("click", () => { $("#session-dialog").close(); startSession(); });
 $("#view-progress").addEventListener("click", () => { $("#session-dialog").close(); navigate("progress"); });
 $("#casino-start").addEventListener("click", startCasinoShoe);
-$("#casino-pause").addEventListener("click", () => setCasinoPaused(!casinoPaused));
+$("#casino-end").addEventListener("click", finishCasinoShoe);
+$("#casino-next-round").addEventListener("click", advanceCasinoRound);
+$("#casino-actions").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-casino-action]");
+  if (button) handleCasinoAction(button.dataset.casinoAction);
+});
 $("#casino-minus").addEventListener("click", () => adjustCasinoCount(-1));
 $("#casino-plus").addEventListener("click", () => adjustCasinoCount(1));
 $("#casino-count-prompt").addEventListener("submit", submitCasinoCount);
 $("#casino-again").addEventListener("click", () => { $("#casino-result-dialog").close(); startCasinoShoe(); });
 $("#casino-leave").addEventListener("click", () => { $("#casino-result-dialog").close(); navigate("practice"); });
+$("#casino-rules-open").addEventListener("click", () => {
+  if (casinoPlaying) return;
+  renderCasinoSettingsUI();
+  $("#casino-rules-dialog").showModal();
+  playSound("tap");
+});
+$("#casino-rules-close").addEventListener("click", closeCasinoRules);
+$("#casino-rules-done").addEventListener("click", closeCasinoRules);
+$$('[data-casino-players]').forEach((button) => button.addEventListener("click", () => {
+  casinoSettings.autoPlayers = Number(button.dataset.casinoPlayers);
+  renderCasinoSettingsUI();
+}));
+$$('[data-casino-soft17]').forEach((button) => button.addEventListener("click", () => {
+  casinoSettings.soft17 = button.dataset.casinoSoft17;
+  renderCasinoSettingsUI();
+}));
+$$('[data-casino-das]').forEach((button) => button.addEventListener("click", () => {
+  casinoSettings.doubleAfterSplit = button.dataset.casinoDas === "true";
+  renderCasinoSettingsUI();
+}));
+$$('[data-casino-surrender]').forEach((button) => button.addEventListener("click", () => {
+  casinoSettings.surrender = button.dataset.casinoSurrender === "true";
+  renderCasinoSettingsUI();
+}));
+$("#casino-decks").addEventListener("change", (event) => {
+  casinoSettings.decks = Number(event.target.value);
+  renderCasinoSettingsUI();
+});
 $("#flash-start").addEventListener("click", startFlashSprint);
 $("#flash-pause").addEventListener("click", () => setFlashPaused(!flashPaused));
 $("#flash-minus").addEventListener("click", () => adjustFlashCount(-1));
@@ -945,28 +1384,7 @@ $("#flash-plus").addEventListener("click", () => adjustFlashCount(1));
 $("#flash-count-prompt").addEventListener("submit", submitFlashCount);
 $("#flash-again").addEventListener("click", () => { $("#flash-result-dialog").close(); startFlashSprint(); });
 $("#flash-leave").addEventListener("click", () => { $("#flash-result-dialog").close(); navigate("practice"); });
-$("#install-button").addEventListener("click", openInstallDialog);
-$("#install-dismiss").addEventListener("click", () => $("#install-dialog").close());
-$("#native-install-button").addEventListener("click", async () => {
-  if (!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = null;
-  $("#install-dialog").close();
-});
 $("#app-toast-close").addEventListener("click", () => { $("#app-toast").hidden = true; });
-
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  $("#native-install-button").hidden = false;
-  $("#install-dialog").classList.add("native-ready");
-});
-window.addEventListener("appinstalled", () => {
-  deferredInstallPrompt = null;
-  $("#install-button").hidden = true;
-  showAppToast("Counted is installed.");
-});
 window.addEventListener("offline", () => showAppToast("You’re offline — training still works."));
 window.addEventListener("online", () => showAppToast("Back online."));
 document.addEventListener("visibilitychange", () => {
@@ -980,7 +1398,7 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "-" || event.key === "_") answer(-1);
 });
 
-if ("serviceWorker" in navigator) {
+if (!isStandaloneApp() && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").then((registration) => {
       registration.addEventListener("updatefound", () => {
@@ -994,10 +1412,13 @@ if ("serviceWorker" in navigator) {
 }
 
 applyTheme(document.documentElement.dataset.theme || "light", false);
-if (isStandaloneApp()) $("#install-button").hidden = true;
+updateSoundUI();
 renderStrategyChart();
 renderTrueCountScenario();
 renderProgress();
+renderCasinoSettingsUI();
+renderCasinoTable();
 startSession();
+document.body.dataset.activeView = "practice";
 const requestedView = new URLSearchParams(window.location.search).get("view");
 if (["learn", "practice", "flash", "casino", "progress"].includes(requestedView)) navigate(requestedView);

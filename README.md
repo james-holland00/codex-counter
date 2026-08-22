@@ -17,7 +17,7 @@ Then open [http://localhost:4173](http://localhost:4173).
 - Guided Hi-Lo card-value lesson
 - Multi-deck basic-strategy charts for hard totals, soft totals, and pairs
 - 20, 40, and 52-card practice sessions
-- Timed Casino Mode with four running-count checkpoints
+- Round-based Casino Mode with configurable table rules, 0–3 automatic players and running-count checks
 - Rapid Flash true-count sprints with four speeds and adjustable shoe depth
 - Mouse, touch, and keyboard input
 - Live accuracy, answer streak, and running count
@@ -30,3 +30,18 @@ Then open [http://localhost:4173](http://localhost:4173).
 - Installable PWA shell with offline caching
 
 Progress is stored in browser local storage and stays on that device.
+
+## Install directly on an iPhone with Xcode
+
+The iOS project packages the trainer inside the app, so the core experience works
+without loading the hosted website.
+
+1. Install the full Xcode app from the Mac App Store and open it once.
+2. From this folder, run `npm run ios:sync`, then `npm run ios:open`.
+3. Connect and unlock the iPhone, then enable Developer Mode if iOS requests it.
+4. In Xcode, select the **App** target, open **Signing & Capabilities**, and choose
+   your Apple Account under **Team**. Keep **Automatically manage signing** enabled.
+5. Choose the connected iPhone as the run destination and press **Run**.
+
+After changing the trainer's HTML, CSS, JavaScript, or assets, run
+`npm run ios:sync` before building again in Xcode.

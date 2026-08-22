@@ -1,0 +1,14 @@
+Counted is a self-contained educational trainer for the Hi-Lo blackjack card-counting system.
+
+No account, sign-in or purchase is required. The app contains no advertising, analytics or user-generated content. Practice progress and preferences are stored only on the device. The complete core experience, including fonts, is bundled and works offline.
+
+The app does not accept wagers, simulate betting balances, award prizes, connect to gambling operators or provide real-money gambling services. Casino Mode simulates blackjack rounds solely for training: the user chooses standard actions, automatic players and dealer rules consume cards from an offline shoe, and the app periodically checks the running count. There are no chips, balances, odds, purchases or links to gambling services.
+
+Suggested review path:
+1. The app opens on Practice.
+2. Tap +1, 0 or −1 to classify the displayed card.
+3. Use the bottom navigation to open Flash and Casino.
+4. Tap the arrow button to start either timed drill.
+5. Open Settings from the top-right gear to view sound, appearance, privacy and support.
+
+There are no hidden features or external accessories.

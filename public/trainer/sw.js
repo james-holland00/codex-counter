@@ -1,5 +1,22 @@
-const CACHE = "counted-v12";
-const ASSETS = ["index.html", "styles.css?v=12", "app.js?v=12", "manifest.webmanifest", "assets/icon.svg", "assets/icon-192.png", "assets/icon-512.png", "assets/apple-touch-icon.png"];
+const CACHE = "counted-v25";
+const ASSETS = [
+  "index.html",
+  "privacy.html",
+  "support.html",
+  "styles.css?v=25",
+  "app.js?v=25",
+  "manifest.webmanifest",
+  "assets/icon.svg",
+  "assets/icon-192.png",
+  "assets/icon-512.png",
+  "assets/apple-touch-icon.png",
+  "assets/fonts/dm-sans-400.ttf",
+  "assets/fonts/dm-sans-500.ttf",
+  "assets/fonts/dm-sans-600.ttf",
+  "assets/fonts/dm-sans-700.ttf",
+  "assets/fonts/fraunces-600.ttf",
+  "assets/fonts/fraunces-700.ttf"
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
