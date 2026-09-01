@@ -1,0 +1,59 @@
+{
+  "identifier" : "0A4B2FD8-733C-4E95-AE1B-38E3AB37F50D",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_GB",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "GBR",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "AA93B729-6B14-4490-BC95-4CB4D3DBBF0B",
+      "localizations" : [
+
+      ],
+      "name" : "Counted Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "2.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "4692485648",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited Practice, Rapid Flash, Casino, Progress and future training modules.",
+              "displayName" : "Counted Pro Annual",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "com.jamesholland.counted.pro.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Counted Pro Annual",
+          "subscriptionGroupID" : "AA93B729-6B14-4490-BC95-4CB4D3DBBF0B",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

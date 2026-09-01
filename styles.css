@@ -281,8 +281,10 @@ kbd { min-width: 23px; display: inline-grid; place-items: center; padding: 1px 5
 .casino-setup > div { flex: 1; }
 .casino-setup label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
 .casino-speed { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.42); }
-.casino-speed button { min-height: 41px; border: 0; border-radius: 9px; color: var(--muted); background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; }
+.casino-speed button { min-height: 41px; display: grid; place-content: center; gap: 1px; border: 0; border-radius: 9px; color: var(--muted); background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; }
+.casino-speed button small { font-size: 7px; font-weight: 800; letter-spacing: .04em; opacity: .7; text-transform: uppercase; }
 .casino-speed button.active { color: white; background: var(--forest); }
+.casino-speed button:disabled { opacity: .62; cursor: default; }
 .casino-start-button { min-width: 154px; height: 51px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 17px; border: 0; border-radius: 13px; color: #092219; background: var(--mint-bright); font-weight: 800; cursor: pointer; box-shadow: 0 9px 22px rgba(11,49,41,.14); }
 .casino-start-button b { font-size: 18px; }
 .casino-table-shell { overflow: hidden; border: 1px solid #27463d; border-radius: 26px; background: #071b16; box-shadow: 0 26px 70px rgba(5,30,23,.24); }
@@ -406,6 +408,13 @@ kbd { min-width: 23px; display: inline-grid; place-items: center; padding: 1px 5
 .casino-actions button { min-width: 0; min-height: 39px; display: grid; grid-template-columns: auto auto; place-content: center; gap: 5px; padding: 0 7px; border: 1px solid rgba(220,237,229,.14); border-radius: 8px; color: #d9e8e1; background: rgba(255,255,255,.035); font-size: 9px; font-weight: 800; cursor: pointer; }
 .casino-actions button span { color: #a8dec7; font-size: 11px; }
 .casino-actions button:disabled { opacity: .28; cursor: default; }
+.casino-decision-clock { min-width: 76px; height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 8px; position: absolute; z-index: 8; right: 18px; bottom: 76px; padding: 4px 9px; border: 1px solid rgba(168,222,199,.5); border-radius: 11px; color: #dcebe4; background: linear-gradient(90deg,rgba(168,222,199,.18) var(--decision-progress),rgba(3,24,17,.9) var(--decision-progress)); box-shadow: 0 8px 20px rgba(0,0,0,.2); backdrop-filter: blur(8px); }
+.casino-decision-clock[hidden] { display: none; }
+.casino-decision-clock span { font-size: 7px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.casino-decision-clock strong { display: flex; align-items: baseline; font-size: 9px; }
+.casino-decision-clock b { margin-right: 1px; font-family: "Fraunces",serif; font-size: 21px; line-height: 1; }
+.casino-decision-clock.urgent { color: #ffd9d4; border-color: #d9776d; background: rgba(112,34,29,.9); animation: decisionPulse .7s ease-in-out infinite alternate; }
+@keyframes decisionPulse { to { transform: scale(1.045); } }
 [data-theme="dark"] .casino-rules-button { background: rgba(255,255,255,.035); }
 .casino-rules-dialog { width: min(520px,calc(100% - 28px)); max-height: calc(100dvh - 28px); padding: 31px; overflow-y: auto; }
 .casino-rules-dialog h2 { margin-top: 4px; }
@@ -428,9 +437,11 @@ kbd { min-width: 23px; display: inline-grid; place-items: center; padding: 1px 5
 .flash-heading > div:first-child > p:last-child { margin: 18px 0 0; color: var(--muted); }
 .flash-setup { display: grid; grid-template-columns: 1.5fr .65fr auto; align-items: end; gap: 10px; }
 .flash-setup label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.flash-speed { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.42); }
-.flash-speed button { min-height: 41px; padding: 0 8px; border: 0; border-radius: 9px; color: var(--muted); background: transparent; font-size: 10px; font-weight: 750; cursor: pointer; touch-action: manipulation; }
+.flash-speed { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.42); }
+.flash-speed button { min-height: 41px; display: grid; place-content: center; gap: 1px; padding: 0 8px; border: 0; border-radius: 9px; color: var(--muted); background: transparent; font-size: 10px; font-weight: 750; cursor: pointer; touch-action: manipulation; }
+.flash-speed button small { font-size: 7px; font-weight: 800; letter-spacing: .04em; opacity: .7; text-transform: uppercase; }
 .flash-speed button.active { color: white; background: var(--forest); }
+.flash-speed button:disabled { opacity: .62; cursor: default; }
 .flash-setup select { width: 100%; height: 51px; padding: 0 34px 0 13px; border: 1px solid var(--line); border-radius: 13px; color: var(--ink); background: rgba(255,255,255,.55); font-weight: 700; }
 .flash-start-button { min-width: 144px; height: 51px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 0 16px; border: 0; border-radius: 13px; color: #092219; background: var(--mint-bright); font-weight: 800; cursor: pointer; box-shadow: 0 9px 22px rgba(11,49,41,.14); }
 .flash-start-button b { font-size: 18px; }
@@ -566,14 +577,33 @@ kbd { min-width: 23px; display: inline-grid; place-items: center; padding: 1px 5
 .mastery-row small { margin-top: 2px; color: var(--muted); }
 .mastery-row b { font-family: "Fraunces", serif; font-size: 18px; }
 .achievements-section { margin-top: 18px; padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.4); }
-.achievement-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 11px; }
+.achievement-mix { display: block; margin-top: 7px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .03em; }
+.achievement-viewport { width: 100%; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-inline: contain; touch-action: pan-x pan-y; }
+.achievement-viewport::-webkit-scrollbar { display: none; }
+.achievement-viewport:focus-visible { outline: 2px solid var(--mint-bright); outline-offset: 5px; border-radius: 16px; }
+.achievement-track { width: 100%; display: flex; }
+.achievement-page { min-width: 100%; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 11px; scroll-snap-align: start; scroll-snap-stop: always; }
 .achievement-card { min-height: 118px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 14px; padding: 17px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.52); }
 .achievement-badge { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 16px 16px 16px 5px; color: #89958f; background: #e4e7e2; font-size: 20px; transform: rotate(-3deg); }
-.achievement-card div:last-child { display: flex; flex-direction: column; }
+.achievement-card-copy { min-width: 0; display: flex; flex-direction: column; }
+.achievement-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-bottom: 5px; color: var(--muted); font-size: 7px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.achievement-card-meta em { overflow: hidden; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.achievement-card-meta b { color: #7c8a84; font-size: inherit; }
 .achievement-card strong { font-family: "Fraunces",serif; font-size: 17px; }
 .achievement-card small { margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+.achievement-card.fun { border-color: #dfc889; background: #fbf4df; }
+.achievement-card.fun .achievement-badge { color: #76511a; background: #efdba6; }
+.achievement-card.fun .achievement-card-meta em { color: #9b681c; }
 .achievement-card.unlocked { border-color: #9fc3b1; background: #eef6f1; }
 .achievement-card.unlocked .achievement-badge { color: #153c31; background: var(--mint-bright); box-shadow: 0 8px 18px rgba(42,103,83,.16); }
+.achievement-card.unlocked .achievement-card-meta b { color: #2f7460; }
+.achievement-controls { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; gap: 13px; margin-top: 18px; }
+.achievement-page-button { width: 42px; height: 38px; border: 1px solid var(--line); border-radius: 11px; color: var(--forest); background: rgba(255,255,255,.55); font-size: 17px; font-weight: 800; cursor: pointer; }
+.achievement-page-button:disabled { opacity: .32; cursor: default; }
+.achievement-page-details { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; font-weight: 700; }
+.achievement-dots { display: flex; justify-content: center; gap: 7px; }
+.achievement-dots button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 99px; background: #bcc5c0; cursor: pointer; transition: width .18s ease, background-color .18s ease; }
+.achievement-dots button.active { width: 22px; background: var(--forest); }
 
 /* Completion dialog */
 dialog { width: min(460px, calc(100% - 32px)); padding: 36px; border: 0; border-radius: 25px; color: var(--ink); background: var(--paper); box-shadow: 0 30px 90px rgba(4,23,18,.35); text-align: center; }
@@ -596,6 +626,35 @@ dialog::backdrop { background: rgba(5,24,20,.66); backdrop-filter: blur(4px); }
 .settings-icon svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .responsible-note { margin: 18px 3px 0; color: var(--muted); font-size: 10px; line-height: 1.55; text-align: center; }
 .app-version { margin: 7px 0 0; color: #8b9692; font-size: 9px; text-align: center; }
+.pro-settings-icon { color: #6a4815; background: #f0d79e; }
+.pro-locked { position: relative; }
+.desktop-nav .pro-locked::before { content: "PRO"; position: absolute; left: 50%; top: 7px; color: #8c6a2b; font-size: 6px; font-weight: 900; letter-spacing: .07em; transform: translateX(-50%); }
+.segmented-control .pro-locked::after { content: "PRO"; margin-left: 4px; color: #956f29; font-size: 6px; font-weight: 900; vertical-align: top; }
+[data-entitlement="pro"] .desktop-nav [data-pro-feature]::before,
+[data-entitlement="pro"] .segmented-control [data-pro-feature]::after { display: none; }
+
+.paywall-dialog { width: min(520px,calc(100% - 24px)); max-height: calc(100dvh - 24px); position: relative; padding: 30px; overflow-y: auto; }
+.paywall-close { position: absolute; top: 16px; right: 16px; }
+.pro-mark { width: 54px; height: 54px; display: grid; place-items: center; margin: 0 auto 15px; border-radius: 17px 17px 17px 5px; color: #493311; background: linear-gradient(145deg,#f7e3b5,#d6a64d); font-size: 22px; transform: rotate(-4deg); box-shadow: 0 10px 24px rgba(114,77,18,.17); }
+.paywall-dialog h2 { margin-top: 5px; font-size: 38px; }
+.paywall-dialog #paywall-copy { max-width: 400px; margin: 10px auto 20px; font-size: 13px; line-height: 1.55; }
+.plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 0 0 16px; text-align: left; }
+.plan-grid section { padding: 15px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.42); }
+.plan-grid section > span { display: block; margin-bottom: 5px; color: var(--muted); font-size: 9px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.plan-grid section > strong { display: block; font-size: 13px; }
+.plan-grid ul { display: grid; gap: 6px; margin: 11px 0 0; padding: 0; list-style: none; }
+.plan-grid li { color: var(--muted); font-size: 10px; line-height: 1.35; }
+.plan-grid li::before { content: "✓"; margin-right: 6px; color: #3d7568; font-weight: 900; }
+.plan-grid .pro-plan { border-color: #cba45c; background: #f7ecd2; }
+.plan-grid .pro-plan > span { color: #79571b; }
+.subscribe-button { width: 100%; min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 17px; border: 0; border-radius: 14px; color: #092219; background: var(--mint-bright); font-weight: 800; cursor: pointer; }
+.subscribe-button strong { font-size: 12px; }
+.subscribe-button:disabled { opacity: .65; cursor: default; }
+.restore-button { min-height: 40px; margin: 7px 3px 0; padding: 0 8px; border: 0; color: #3d7568; background: transparent; font-size: 11px; font-weight: 800; cursor: pointer; }
+.purchase-feedback { min-height: 17px; margin: 4px 0 0; color: #3d7568 !important; font-size: 10px; font-weight: 700; }
+.subscription-terms { margin: 9px auto 0; color: var(--muted) !important; font-size: 8px; line-height: 1.5; }
+.paywall-links { display: flex; justify-content: center; gap: 7px; margin: 9px 0 0; font-size: 10px; }
+.paywall-links a { color: #3d7568; }
 .dialog-symbol { width: 54px; height: 54px; display: grid; place-items: center; margin: 0 auto 24px; border-radius: 17px 17px 17px 5px; color: var(--mint); background: var(--forest); font-size: 24px; transform: rotate(-5deg); }
 dialog h2 { font-size: 38px; }
 dialog > p:not(.eyebrow) { color: var(--muted); }
@@ -641,20 +700,24 @@ dialog > p:not(.eyebrow) { color: var(--muted); }
 /* Dark theme */
 [data-theme="dark"] {
   color-scheme: dark;
-  --ink: #e8f0eb;
-  --muted: #93a49e;
+  --ink: #f1f7f4;
+  --muted: #b2c1bb;
   --forest: #17483d;
   --forest-dark: #071a15;
   --mint: #244d41;
   --mint-bright: #9ed9c0;
   --cream: #081611;
   --paper: #10211b;
-  --line: #293a34;
+  --line: #3a5047;
   --gold: #e0b764;
   --coral: #df7b70;
   --shadow: 0 24px 70px rgba(0, 0, 0, .28);
 }
 [data-theme="dark"] body { background: radial-gradient(circle at 16% -10%, rgba(43, 96, 77, .24), transparent 25rem), var(--cream); }
+[data-theme="dark"] .eyebrow,
+[data-theme="dark"] .keyboard-tip > span,
+[data-theme="dark"] .legal-back,
+[data-theme="dark"] .legal-shell a { color: #9ed9c0; }
 [data-theme="dark"] .topbar { border-bottom-color: rgba(218, 237, 227, .09); background: rgba(8, 22, 17, .88); }
 [data-theme="dark"] .desktop-nav button.active,
 [data-theme="dark"] .mobile-nav button.active { color: var(--mint-bright); }
@@ -698,10 +761,31 @@ dialog > p:not(.eyebrow) { color: var(--muted); }
 [data-theme="dark"] .rank-step.current { border-color: #3c7565; background: #1b5144; }
 [data-theme="dark"] .achievement-badge { color: #75867f; background: #1b2e27; }
 [data-theme="dark"] .achievement-card.unlocked .achievement-badge { color: #092219; background: var(--mint-bright); }
+[data-theme="dark"] .achievement-card.fun { border-color: #665633; background: #30291a; }
+[data-theme="dark"] .achievement-card.fun .achievement-badge { color: #efd28c; background: #55431f; }
+[data-theme="dark"] .achievement-card.fun .achievement-card-meta em { color: #e8c573; }
+[data-theme="dark"] .achievement-card.fun.unlocked { border-color: #315f51; background: #15342b; }
+[data-theme="dark"] .achievement-card.fun.unlocked .achievement-badge { color: #092219; background: var(--mint-bright); }
+[data-theme="dark"] .achievement-page-button { color: var(--mint-bright); background: #142720; }
+[data-theme="dark"] .achievement-dots button { background: #43574f; }
+[data-theme="dark"] .achievement-dots button.active { background: var(--mint-bright); }
 [data-theme="dark"] .featured-stat { border-color: #306558; background: #12382f; }
 [data-theme="dark"] .stat-icon { color: var(--mint-bright); background: #1a493d; }
 [data-theme="dark"] .history-item { background: #142720; }
 [data-theme="dark"] dialog { color: var(--ink); background: #10211b; }
+[data-theme="dark"] dialog::backdrop { background: rgba(2, 12, 9, .72); }
+[data-theme="dark"] .dialog-close { color: #e6f0eb; border-color: #52685f; background: #1a2d26; }
+[data-theme="dark"] .settings-list { border-color: #496058; background: #142720; }
+[data-theme="dark"] .settings-row { color: #f3f8f5; border-bottom-color: #40564e; }
+[data-theme="dark"] .settings-row:active { background: #1b332b; }
+[data-theme="dark"] .settings-row small,
+[data-theme="dark"] .responsible-note { color: #bdcbc5; }
+[data-theme="dark"] .settings-row > b { color: #a9ddc8; }
+[data-theme="dark"] .settings-icon { color: #b7e4d1; background: #1d5144; }
+[data-theme="dark"] .pro-settings-icon { color: #f2d796; background: #5b4118; }
+[data-theme="dark"] .plan-grid section { background: #142720; }
+[data-theme="dark"] .plan-grid .pro-plan { border-color: #8d6a30; background: #342915; }
+[data-theme="dark"] .app-version { color: #9fb1aa; }
 [data-theme="dark"] .dialog-stats span { background: #0a1813; }
 [data-theme="dark"] .secondary-button { color: var(--ink); border-color: var(--line); background: #172a23; }
 [data-theme="dark"] .primary-button { border-color: #2d6758; background: #1b5144; }
@@ -715,6 +799,8 @@ dialog > p:not(.eyebrow) { color: var(--muted); }
 [data-theme="dark"] .true-count-equation .lab-question { background: #17483d; }
 [data-theme="dark"] .true-count-options button.correct { color: #b6e3d0; background: #174237; }
 [data-theme="dark"] .true-count-options button.wrong { color: #f0aaa2; background: #4a2c29; }
+[data-theme="dark"] .true-count-feedback.correct { color: #91d5b9; }
+[data-theme="dark"] .true-count-feedback.wrong { color: #f0aaa2; }
 [data-theme="dark"] .rules-chip,
 [data-theme="dark"] .strategy-guide,
 [data-theme="dark"] .strategy-tabs,
@@ -733,6 +819,10 @@ dialog > p:not(.eyebrow) { color: var(--muted); }
 [data-theme="dark"] .action-double { color: #f0d18e; background: #493b20; }
 [data-theme="dark"] .legend-split,
 [data-theme="dark"] .action-split { color: #f0aaa2; background: #4a2c29; }
+[data-theme="dark"] .casino-rules-button { color: var(--mint-bright); }
+[data-theme="dark"] .rule-segments button.active { color: #092018; background: var(--mint-bright); }
+[data-theme="dark"] .legal-shell { background: #10211b; }
+[data-theme="dark"] .support-contact-pending { color: #f2d28f !important; background: #493b20; }
 
 body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
 .answer-buttons button, .stat-card, .history-card, .mastery-card, .history-item,
@@ -772,7 +862,7 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .progression-hero { grid-template-columns: auto 1fr; }
   .daily-goal-card { grid-column: 1 / -1; }
   .rank-track { grid-template-columns: repeat(3,1fr); }
-  .achievement-grid { grid-template-columns: 1fr 1fr; }
+  .achievement-page { grid-template-columns: 1fr 1fr; }
   .strategy-heading-row { align-items: start; }
   .strategy-toolbar { align-items: flex-start; flex-direction: column; }
   .strategy-legend { justify-content: flex-start; }
@@ -805,8 +895,11 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .mobile-nav { width: 100%; height: calc(65px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); align-items: stretch; position: fixed; z-index: 60; inset-inline: 0; top: auto; bottom: 0; padding: 6px max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); overflow: hidden; border-top: 1px solid rgba(18,32,29,.12); background: rgba(250,248,242,.94); backdrop-filter: blur(18px); transform: translate3d(0,0,0); backface-visibility: hidden; contain: layout paint; will-change: transform; }
   [data-theme="dark"] .mobile-nav { border-top-color: rgba(218,237,227,.1); background: rgba(8,22,17,.94); }
   .mobile-nav button { min-width: 0; height: 100%; display: grid; grid-template-rows: 23px 13px; align-content: center; justify-items: center; gap: 1px; padding: 0; overflow: hidden; border: 0; background: none; color: #79827f; font-size: 10px; font-weight: 700; line-height: 13px; }
+  .mobile-nav button { position: relative; border-radius: 13px; transition: color .18s ease, background-color .18s ease, box-shadow .18s ease; }
   .mobile-nav button span { width: 23px; height: 23px; display: grid; place-items: center; font-size: 19px; line-height: 1; }
-  .mobile-nav button.active { color: var(--forest); }
+  .mobile-nav button.active { color: var(--forest); background: var(--mint); box-shadow: inset 0 0 0 1px rgba(11,49,41,.08); }
+  .mobile-nav button.active::after { content: ""; width: 24px; height: 3px; position: absolute; left: 50%; top: 0; border-radius: 0 0 4px 4px; background: currentColor; transform: translateX(-50%); }
+  [data-theme="dark"] .mobile-nav button.active { color: var(--mint-bright); background: rgba(158,217,192,.13); box-shadow: inset 0 0 0 1px rgba(158,217,192,.16); }
   .mobile-nav button:focus-visible { outline: 0; }
   h1 { font-size: 45px; }
   .narrow-heading { margin-bottom: 32px; }
@@ -928,8 +1021,14 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .rank-step { min-height: 105px; }
   .achievements-section { padding: 21px 16px; }
   .achievements-section .section-title { align-items: start; flex-direction: column; gap: 7px; }
-  .achievement-grid { grid-template-columns: 1fr; }
-  .achievement-card { min-height: 100px; }
+  .achievement-page { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .achievement-card { min-height: 148px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
+  .achievement-badge { width: 37px; height: 37px; flex: none; border-radius: 12px 12px 12px 4px; font-size: 14px; }
+  .achievement-card-copy { width: 100%; }
+  .achievement-card-meta { gap: 4px; font-size: 6px; }
+  .achievement-card strong { font-size: 15px; line-height: 1.05; }
+  .achievement-card small { font-size: 8.5px; line-height: 1.35; }
+  .achievement-controls { margin-top: 14px; }
   .stat-grid { gap: 10px; }
   .stat-card { min-height: 170px; padding: 18px; }
   .stat-icon { width: 32px; height: 32px; top: 16px; right: 16px; }
@@ -959,6 +1058,18 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
 @media (max-width: 360px) {
   .level-pill { display: none; }
 }
+
+@media (max-width: 600px) {
+  .mobile-nav .pro-locked::after { content: ""; width: 6px; height: 6px; position: absolute; top: 4px; right: calc(50% - 18px); border: 1px solid var(--paper); border-radius: 50%; background: #d0a34e; }
+  [data-entitlement="pro"] .mobile-nav [data-pro-feature]::after { display: none; }
+  .paywall-dialog { padding: 24px 18px 19px; }
+  .paywall-dialog h2 { font-size: 31px; }
+  .plan-grid { gap: 7px; }
+  .plan-grid section { padding: 12px 10px; }
+}
+
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible,
+.mobile-nav button:focus-visible { outline: 3px solid rgba(220,173,87,.75); outline-offset: 3px; }
 
 /* Native iPhone training screens stay inside the usable viewport. */
 @media (max-width: 620px) {
@@ -1022,6 +1133,8 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .flash-speed { padding: 3px; }
   .casino-speed button,
   .flash-speed button { min-height: 35px; padding: 0 3px; font-size: 9px; }
+  .casino-speed button small,
+  .flash-speed button small { font-size: 6px; }
   .casino-start-button,
   .flash-start-button { width: 44px; min-width: 44px; height: 43px; padding: 0; justify-content: center; }
   .casino-rules-button { width: 44px; height: 43px; }
@@ -1035,8 +1148,10 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .flash-shell { flex: 1; min-height: 0; display: flex; flex-direction: column; border-radius: 18px; }
   .casino-table-topbar,
   .flash-topbar { flex: none; min-height: 51px; grid-template-columns: auto minmax(0,1fr) auto; gap: 6px; padding: 6px 9px; }
+  .casino-table-topbar { flex: none; min-height: 56px; grid-template-columns: minmax(84px,.9fr) minmax(112px,1.1fr) 72px; gap: 7px; padding: 7px 9px; }
   .casino-live,
   .flash-live { font-size: 8px; }
+  .casino-live { font-size: 9px; line-height: 1.25; }
   .casino-stats,
   .flash-stats { grid-column: auto; min-width: 0; padding: 0; border-top: 0; }
   .casino-stats > span,
@@ -1044,38 +1159,52 @@ body, .topbar, .trainer-panel, .practice-sidebar, .lesson-card, .score-strip,
   .casino-stats > span:nth-child(3) { display: none; }
   .casino-stats small,
   .flash-stats small { font-size: 7px; }
+  .casino-stats small { font-size: 8px; }
   .casino-stats strong,
   .flash-stats strong { font-size: 15px; }
+  .casino-stats strong { font-size: 17px; }
   .casino-end,
   .flash-pause { min-width: 66px; height: 34px; font-size: 9px; }
+  .casino-end { min-width: 72px; height: 38px; font-size: 10px; }
   .casino-felt,
   .flash-stage { flex: 1; min-height: 0; height: auto; }
   .casino-watermark { display: none; }
   .casino-felt::before { inset: 10px; }
-  .dealer-zone { width: 100%; gap: 2px; top: 6px; }
-  .table-hand-heading { gap: 6px; font-size: 7px; }
-  .table-hand-heading strong { font-size: 11px; }
-  .dealer-zone .table-hand { min-height: 47px; }
-  .table-card { width: 31px; height: 43px; margin-left: -12px; border-radius: 5px; font-size: 10px; }
-  .table-card > span { margin-top: 2px; font-size: 9px; }
+  .dealer-zone { width: 100%; gap: 3px; top: 9px; }
+  .table-hand-heading { gap: 7px; font-size: 9px; }
+  .table-hand-heading strong { font-size: 14px; }
+  .dealer-zone .table-hand { min-height: 62px; }
+  .table-card { width: 42px; height: 59px; margin-left: -15px; border-radius: 6px; font-size: 13px; }
+  .table-card > span { margin-top: 3px; font-size: 12px; }
   .table-card.back { border-width: 2px; }
-  .table-card.back i { width: 18px; height: 18px; font-size: 9px; }
-  .casino-seats { gap: 2px; left: 3px; right: 3px; top: 82px; bottom: 54px; }
-  .casino-seat { gap: 2px; }
-  .casino-seat > span { font-size: 7px; }
-  .seat-hands { max-width: 100%; gap: 1px; }
-  .seat-hand { min-width: 0; padding: 2px; border-radius: 7px; }
-  .seat-hand .table-hand { min-height: 42px; padding-left: 11px; }
-  .seat-hand .table-card { width: 28px; height: 39px; margin-left: -11px; font-size: 9px; }
-  .seat-hand .table-card > span { font-size: 8px; }
-  .seat-hand > small { min-height: 10px; margin-top: 1px; font-size: 7px; }
-  .casino-outcome { min-height: 10px; font-size: 7px; }
-  .casino-round-bar { min-height: 42px; left: 6px; right: 6px; bottom: 5px; padding: 5px 7px; }
-  .casino-round-bar p { font-size: 8px; }
-  .casino-round-bar button { height: 29px; padding: 0 9px; font-size: 8px; }
-  .casino-actions { gap: 3px; left: 5px; right: 5px; bottom: 5px; padding: 5px; }
-  .casino-actions button { min-height: 32px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px; font-size: 7px; }
-  .casino-actions button span { font-size: 9px; }
+  .table-card.back i { width: 24px; height: 24px; font-size: 12px; }
+  .casino-seats { gap: 4px; left: 5px; right: 5px; top: 92px; bottom: 68px; }
+  .casino-seat { gap: 3px; }
+  .casino-seat > span { font-size: 9px; }
+  .seat-hands { max-width: 100%; gap: 2px; }
+  .seat-hand { min-width: 0; padding: 3px; border-radius: 8px; }
+  .seat-hand .table-hand { min-height: 52px; padding-left: 13px; }
+  .seat-hand .table-card { width: 36px; height: 51px; margin-left: -13px; font-size: 11px; }
+  .seat-hand .table-card > span { font-size: 10px; }
+  .seat-hand > small { min-height: 12px; margin-top: 2px; font-size: 8px; }
+  .casino-outcome { min-height: 13px; font-size: 8px; }
+  .casino-seats[data-seat-count="1"] .seat-hand .table-card { width: 50px; height: 70px; margin-left: -17px; font-size: 15px; }
+  .casino-seats[data-seat-count="1"] .seat-hand .table-card > span { font-size: 14px; }
+  .casino-seats[data-seat-count="1"] .seat-hand .table-hand { min-height: 71px; padding-left: 17px; }
+  .casino-seats[data-seat-count="1"] .casino-seat > span { font-size: 11px; }
+  .casino-seats[data-seat-count="2"] .seat-hand .table-card { width: 44px; height: 62px; margin-left: -15px; font-size: 13px; }
+  .casino-seats[data-seat-count="2"] .seat-hand .table-card > span { font-size: 12px; }
+  .casino-seats[data-seat-count="3"] .seat-hand .table-card { width: 39px; height: 55px; }
+  .casino-seats[data-seat-count="4"] .seat-hand .table-card { width: 34px; height: 48px; margin-left: -12px; font-size: 10px; }
+  .casino-seats[data-seat-count="4"] .seat-hand .table-card > span { font-size: 9px; }
+  .casino-round-bar { min-height: 50px; left: 7px; right: 7px; bottom: 6px; padding: 6px 8px; }
+  .casino-round-bar p { font-size: 10px; }
+  .casino-round-bar button { height: 35px; padding: 0 11px; font-size: 10px; }
+  .casino-actions { gap: 4px; left: 6px; right: 6px; bottom: 6px; padding: 6px; }
+  .casino-actions button { min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 3px 2px; font-size: 10px; }
+  .casino-actions button span { font-size: 13px; }
+  .casino-decision-clock { right: 7px; bottom: 61px; height: 34px; padding: 3px 7px; }
+  .casino-decision-clock b { font-size: 18px; }
   .casino-card-stage { inset: 16px 0 62px; }
   .casino-card { width: auto; height: min(170px, calc(100% - 4px)); aspect-ratio: 69 / 95; }
   .dealt-area { left: 10px; right: 10px; bottom: 8px; }

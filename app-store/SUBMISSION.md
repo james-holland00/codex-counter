@@ -10,13 +10,27 @@ This file contains a working first-release listing. Text marked **INPUT REQUIRED
 - Primary category: `Education`
 - Secondary category: `Games`
 - Version: `1.0`
-- Build: `1`
-- Price: `Free`
+- Build: `2`
+- Price: `Free download`; Counted Pro is `£2.99/year`
 - Availability: iPhone only
-- Copyright: **INPUT REQUIRED — account holder's legal name or company**
+- Copyright: `© 2026 James Holland`
 - Privacy policy URL: **INPUT REQUIRED — publish `privacy.html` and paste its HTTPS URL**
 - Support URL: **INPUT REQUIRED — publish `support.html` and paste its HTTPS URL**
-- Support email: **INPUT REQUIRED — replace the marker in `support.html`**
+- Support email: **INPUT REQUIRED — reserve a free public address, then replace `SUPPORT_EMAIL_GOES_HERE` in `support.html`**
+
+## In-App Purchase
+
+- Type: `Auto-Renewable Subscription`
+- Reference name: `Counted Pro Annual`
+- Product ID: `com.jamesholland.counted.pro.annual`
+- Subscription group: `Counted Pro`
+- Duration: `1 year`
+- UK price: `£2.99`
+- Free tier: Hi-Lo lessons, basic-strategy charts and 20-card Practice
+- Pro tier: unlimited 20/40/52-card Practice, Rapid Flash, Casino, Progress and future training modules
+- Free trial: none for version 1.0
+
+The same product is already defined in `ios/App/App/Counted.storekit` for local testing before App Store Connect exists. Recreate the identifiers exactly in App Store Connect after enrolment.
 
 The exact name cannot be reserved until the app record is created in App Store Connect. Similar apps already use “Counted,” so the descriptive suffix is intentional.
 
@@ -33,15 +47,15 @@ Learn the three card-value groups, make recognition automatic and build the conc
 TRAIN WITH PURPOSE
 
 • Practise +1, 0 and −1 card values without answer hints
-• Build speed with short or full-deck sessions
-• Apply basic strategy and hold a running count through complete simulated blackjack rounds
-• Convert running counts in Rapid Flash true-count sprints
+• Start free with focused 20-card sessions
+• Upgrade to Counted Pro for longer sessions and complete simulated blackjack rounds
+• Build speed with Pro’s Rapid Flash true-count sprints
 • Study hard totals, soft totals and pairs in the included basic-strategy charts
 • Track accuracy, streaks, mastery, XP and achievements
 
 PRIVATE AND OFFLINE
 
-Counted requires no account, includes no advertising and contains no third-party analytics. Training progress stays on your device, and the core app works without an internet connection.
+Counted requires no in-app account, includes no advertising and contains no third-party analytics. Training progress stays on your device, and the core app works without an internet connection. Counted Pro purchases are securely handled by Apple.
 
 Counted is an educational training tool. It does not accept wagers, provide gambling services or promise positive results. Gambling involves risk; card counting does not guarantee winnings.
 
@@ -91,7 +105,8 @@ Use Apple’s currently accepted 6.9-inch iPhone size first. Additional sizes ca
 1. Enrol in the Apple Developer Program.
 2. Create the App Store Connect app record and confirm the name.
 3. Add the privacy and support URLs, legal copyright owner and support email.
-4. Complete pricing, availability, content rights and age-rating forms.
-5. Build a signed archive with stable Xcode, upload it and run TestFlight checks.
-6. Add screenshots and the review notes from `REVIEW_NOTES.txt`.
-7. Opt out of iPhone-on-Mac and Apple Vision Pro availability unless those platforms are tested separately.
+4. Create the Counted Pro subscription using the identifiers above and add its App Review screenshot.
+5. Complete pricing, availability, content rights and age-rating forms.
+6. Build a signed archive with stable Xcode, upload it and run TestFlight checks.
+7. Add screenshots and the review notes from `REVIEW_NOTES.txt`.
+8. Opt out of iPhone-on-Mac and Apple Vision Pro availability unless those platforms are tested separately.

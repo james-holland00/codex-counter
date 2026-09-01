@@ -22,7 +22,7 @@
         } catch { document.documentElement.dataset.theme = "light"; }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=25" />
+    <link rel="stylesheet" href="styles.css?v=32" />
     <title>Counted — Blackjack Trainer</title>
   </head>
   <body>
@@ -35,10 +35,10 @@
 
         <nav class="desktop-nav" aria-label="Main navigation">
           <button data-nav="learn">Learn</button>
-          <button class="active" data-nav="practice">Practice</button>
-          <button data-nav="flash">Flash</button>
-          <button data-nav="casino">Casino</button>
-          <button data-nav="progress">Progress</button>
+          <button class="active" data-nav="practice" aria-current="page">Practice</button>
+          <button data-nav="flash" data-pro-feature>Flash</button>
+          <button data-nav="casino" data-pro-feature>Casino</button>
+          <button data-nav="progress" data-pro-feature>Progress</button>
         </nav>
 
         <div class="topbar-actions">
@@ -174,9 +174,9 @@
               <div class="session-settings">
                 <label for="session-length">Session length</label>
                 <div class="segmented-control" id="session-length" role="group" aria-label="Session length">
-                  <button data-length="20">20</button>
-                  <button class="active" data-length="40">40</button>
-                  <button data-length="52">52</button>
+                  <button class="active" data-length="20">20</button>
+                  <button data-length="40" data-pro-feature aria-label="40 cards, Counted Pro">40</button>
+                  <button data-length="52" data-pro-feature aria-label="52 cards, Counted Pro">52</button>
                 </div>
               </div>
 
@@ -187,7 +187,7 @@
               <div class="session-bar">
                 <button class="text-button" id="reset-session"><span>↻</span> Reset</button>
                 <div class="progress-track" aria-label="Session progress"><span id="session-progress"></span></div>
-                <span class="session-count"><strong id="card-number">1</strong>/<span id="card-total">40</span></span>
+                <span class="session-count"><strong id="card-number">1</strong>/<span id="card-total">20</span></span>
               </div>
 
               <div class="trainer-stage">
@@ -231,10 +231,9 @@
               <div>
                 <label>Flash speed</label>
                 <div class="flash-speed" role="group" aria-label="Card flash speed">
-                  <button data-flash-speed="1200">Tourist</button>
-                  <button class="active" data-flash-speed="750">Casino</button>
-                  <button data-flash-speed="450">Heat</button>
-                  <button data-flash-speed="250">Pit Boss</button>
+                  <button data-flash-speed="1200"><span>Tourist</span><small>Relaxed</small></button>
+                  <button class="active" data-flash-speed="700"><span>Casino</span><small>Quick</small></button>
+                  <button data-flash-speed="350"><span>Pit Boss</span><small>Rapid</small></button>
                 </div>
               </div>
               <div>
@@ -292,7 +291,7 @@
             </div>
           </div>
 
-          <div class="flash-note"><span>30 cards · 3 checkpoints</span> Start at Tourist pace, then step up only when you can hold both the running count and deck estimate.</div>
+          <div class="flash-note"><span>30 cards · 3 checkpoints · 3 speeds</span> Start at Tourist pace, then step up only when you can hold both the running count and deck estimate.</div>
         </section>
 
         <section class="view casino-view" id="casino-view" data-view="casino" hidden>
@@ -306,9 +305,9 @@
               <div>
                 <label>Dealing pace</label>
                 <div class="casino-speed" role="group" aria-label="Dealing pace">
-                  <button data-casino-speed="1500">Tourist</button>
-                  <button class="active" data-casino-speed="950">Casino</button>
-                  <button data-casino-speed="600">Pit Boss</button>
+                  <button data-casino-pace="tourist" aria-label="Tourist: relaxed difficulty"><span>Tourist</span><small>Relaxed</small></button>
+                  <button class="active" data-casino-pace="casino" aria-label="Casino: standard difficulty"><span>Casino</span><small>Standard</small></button>
+                  <button data-casino-pace="pitboss" aria-label="Pit Boss: expert difficulty with timed decisions"><span>Pit Boss</span><small>Expert · 8s</small></button>
                 </div>
               </div>
               <button class="casino-rules-button" id="casino-rules-open" type="button" aria-label="Open table rules"><span aria-hidden="true">⚙</span><small>Rules</small></button>
@@ -340,6 +339,8 @@
               <div class="casino-seats" id="casino-seats" aria-live="polite">
                 <div class="casino-seat user-seat idle-seat"><span>You</span><div class="table-hand"><span class="table-card back"><i>♠</i></span></div><small>Ready</small></div>
               </div>
+
+              <div class="casino-decision-clock" id="casino-decision-clock" role="timer" aria-live="polite" hidden><span>Decide</span><strong><b id="casino-decision-seconds">8</b>s</strong></div>
 
               <div class="casino-round-bar">
                 <p id="casino-round-message">Choose your table rules, then deal in.</p>
@@ -420,18 +421,28 @@
           </div>
 
           <section class="achievements-section" aria-labelledby="achievements-heading">
-            <div class="section-title"><div><p class="eyebrow">Milestones</p><h2 id="achievements-heading">Achievements</h2></div><span id="achievement-total">0 / 6 unlocked</span></div>
-            <div class="achievement-grid" id="achievement-grid"></div>
+            <div class="section-title">
+              <div><p class="eyebrow">Milestones</p><h2 id="achievements-heading">Achievements</h2><small class="achievement-mix">20 skill milestones · 10 fun challenges</small></div>
+              <span id="achievement-total">0 / 30 unlocked</span>
+            </div>
+            <div class="achievement-viewport" id="achievement-viewport" tabindex="0" aria-label="Swipe through achievement tiers">
+              <div class="achievement-track" id="achievement-grid"></div>
+            </div>
+            <div class="achievement-controls">
+              <button class="achievement-page-button" id="achievement-prev" type="button" aria-label="Previous achievement tier">←</button>
+              <div class="achievement-page-details"><div class="achievement-dots" id="achievement-dots" aria-label="Achievement pages"></div><span id="achievement-page-status">Page 1 of 5 · Tier 1</span></div>
+              <button class="achievement-page-button" id="achievement-next" type="button" aria-label="Next achievement tier">→</button>
+            </div>
           </section>
         </section>
       </main>
 
       <nav class="mobile-nav" aria-label="Mobile navigation">
         <button data-nav="learn"><span aria-hidden="true">◇</span>Learn</button>
-        <button class="active" data-nav="practice"><span aria-hidden="true">♠</span>Practice</button>
-        <button data-nav="flash"><span aria-hidden="true">⚡</span>Flash</button>
-        <button data-nav="casino"><span aria-hidden="true">◆</span>Casino</button>
-        <button data-nav="progress"><span aria-hidden="true">↗</span>Progress</button>
+        <button class="active" data-nav="practice" aria-current="page"><span aria-hidden="true">♠</span>Practice</button>
+        <button data-nav="flash" data-pro-feature><span aria-hidden="true">⚡</span>Flash</button>
+        <button data-nav="casino" data-pro-feature><span aria-hidden="true">◆</span>Casino</button>
+        <button data-nav="progress" data-pro-feature><span aria-hidden="true">↗</span>Progress</button>
       </nav>
     </div>
 
@@ -451,6 +462,11 @@
           <span><strong>Sound effects</strong><small>Feedback, deals and milestones</small></span>
           <b id="sound-setting-value">On</b>
         </button>
+        <button class="settings-row subscription-row" id="subscription-open" aria-label="View Counted Pro">
+          <span class="settings-icon pro-settings-icon" aria-hidden="true">★</span>
+          <span><strong>Counted Pro</strong><small id="subscription-setting-copy">Unlimited drills, Casino, Flash and Progress</small></span>
+          <b id="subscription-setting-value">£2.99/year</b>
+        </button>
         <a class="settings-row" href="privacy.html">
           <span class="settings-icon" aria-hidden="true">⌁</span>
           <span><strong>Privacy policy</strong><small>What Counted stores and why</small></span>
@@ -463,7 +479,25 @@
         </a>
       </div>
       <p class="responsible-note">Counted is an educational training tool. It does not accept wagers, provide gambling services or promise positive results.</p>
-      <p class="app-version">Version 1.0 (1)</p>
+      <p class="app-version">Version 1.0 (2) · © 2026 James Holland</p>
+    </dialog>
+
+    <dialog class="paywall-dialog" id="paywall-dialog" aria-labelledby="paywall-title" aria-describedby="paywall-copy">
+      <button class="dialog-close paywall-close" id="paywall-close" type="button" aria-label="Close Counted Pro">×</button>
+      <div class="pro-mark" aria-hidden="true">★</div>
+      <p class="eyebrow">Counted Pro</p>
+      <h2 id="paywall-title">Train without limits.</h2>
+      <p id="paywall-copy">Keep the essentials free, then unlock every advanced drill with one simple annual subscription.</p>
+      <div class="plan-grid" aria-label="Counted plans">
+        <section><span>Free</span><strong>Learn the system</strong><ul><li>Hi-Lo lessons</li><li>Basic-strategy charts</li><li>20-card practice</li></ul></section>
+        <section class="pro-plan"><span>Pro</span><strong>Build real fluency</strong><ul><li>Unlimited Practice</li><li>Rapid Flash &amp; Casino</li><li>Progress &amp; future modules</li></ul></section>
+      </div>
+      <button class="subscribe-button" id="subscribe-button" type="button"><span>Start Counted Pro</span><strong id="subscribe-price">£2.99/year</strong></button>
+      <button class="restore-button" id="restore-purchases" type="button">Restore purchases</button>
+      <button class="restore-button" id="manage-subscription" type="button" hidden>Manage subscription</button>
+      <p class="purchase-feedback" id="purchase-feedback" role="status" aria-live="polite"></p>
+      <p class="subscription-terms">£2.99 per year. Payment is charged to your Apple Account. The subscription renews automatically unless cancelled at least 24 hours before the end of the current period. You can manage or cancel it in App Store account settings.</p>
+      <p class="paywall-links"><a href="privacy.html">Privacy</a><span aria-hidden="true">·</span><a href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noreferrer">Terms</a></p>
     </dialog>
 
     <dialog id="session-dialog">
@@ -549,6 +583,7 @@
 
     <div class="app-toast" id="app-toast" role="status" hidden><span id="app-toast-copy">Ready offline.</span><button id="app-toast-close" aria-label="Dismiss">×</button></div>
 
-    <script src="app.js?v=25" defer></script>
+    <script src="counted-core.js?v=32" defer></script>
+    <script src="app.js?v=32" defer></script>
   </body>
 </html>

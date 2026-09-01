@@ -16,7 +16,7 @@ Then open [http://localhost:4173](http://localhost:4173).
 
 - Guided Hi-Lo card-value lesson
 - Multi-deck basic-strategy charts for hard totals, soft totals, and pairs
-- 20, 40, and 52-card practice sessions
+- Free 20-card practice sessions, with 40- and 52-card sessions in Counted Pro
 - Round-based Casino Mode with configurable table rules, 0–3 automatic players and running-count checks
 - Rapid Flash true-count sprints with four speeds and adjustable shoe depth
 - Mouse, touch, and keyboard input
@@ -36,8 +36,8 @@ Progress is stored in browser local storage and stays on that device.
 The iOS project packages the trainer inside the app, so the core experience works
 without loading the hosted website.
 
-1. Install the full Xcode app from the Mac App Store and open it once.
-2. From this folder, run `npm run ios:sync`, then `npm run ios:open`.
+1. Download the full Xcode app from Apple’s developer website and open it once. This project currently uses `/Users/jamesholland/Downloads/Xcode-beta.app`.
+2. From this folder, run `npm run ios:sync`, then open `ios/App/App.xcodeproj` in that Xcode app.
 3. Connect and unlock the iPhone, then enable Developer Mode if iOS requests it.
 4. In Xcode, select the **App** target, open **Signing & Capabilities**, and choose
    your Apple Account under **Team**. Keep **Automatically manage signing** enabled.
@@ -45,3 +45,14 @@ without loading the hosted website.
 
 After changing the trainer's HTML, CSS, JavaScript, or assets, run
 `npm run ios:sync` before building again in Xcode.
+
+## Test Counted Pro before joining the Developer Program
+
+The shared **App** scheme uses `ios/App/App/Counted.storekit`, which defines the local
+`com.jamesholland.counted.pro.annual` subscription at £2.99/year. Choose a simulator
+or connected iPhone in Xcode and press **Run**. Apple’s local StoreKit environment can
+then test purchase, renewal, expiry, restore and cancellation without App Store Connect
+and without charging a real Apple Account.
+
+Run the automated product-boundary and Pit Boss timer checks with `npm test`, or run
+the complete JavaScript and web-build verification with `npm run verify`.

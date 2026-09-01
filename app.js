@@ -61,13 +61,42 @@ const rankMilestones = [
   { level: 8, title: "Casino Sharp", copy: "Keep your process steady at real table speed.", icon: "◆" },
   { level: 11, title: "True Count Master", copy: "Card values, deck estimation, and conversion work as one.", icon: "★" },
 ];
+const achievementPageSize = 6;
 const achievementDefinitions = [
-  { id: "first-deal", icon: "♠", title: "First Deal", copy: "Count 20 practice cards.", unlocked: (p) => p.totalCards >= 20 },
-  { id: "hundred-club", icon: "100", title: "Hundred Club", copy: "Count 100 practice cards.", unlocked: (p) => p.totalCards >= 100 },
-  { id: "hot-run", icon: "↗", title: "Hot Run", copy: "Reach a 20-card answer streak.", unlocked: (p) => p.bestStreak >= 20 },
-  { id: "casino-ready", icon: "◆", title: "Casino Ready", copy: "Clear every Casino Mode checkpoint.", unlocked: (p) => p.casinoBestAccuracy >= 100 },
-  { id: "flash-point", icon: "⚡", title: "Flash Point", copy: "Perfect a Rapid Flash sprint.", unlocked: (p) => p.flashBestAccuracy >= 100 },
-  { id: "committed", icon: "7", title: "Committed", copy: "Build a seven-day practice streak.", unlocked: () => practiceDayStreak() >= 7 },
+  { id: "first-deal", tier: 1, icon: "♠", title: "First Deal", copy: "Count 20 practice cards.", unlocked: (p) => p.totalCards >= 20 },
+  { id: "session-one", tier: 1, icon: "1", title: "Session One", copy: "Complete your first practice session.", unlocked: (p) => p.practiceSessions >= 1 },
+  { id: "first-flash", tier: 1, icon: "⚡", title: "First Flash", copy: "Complete a Rapid Flash sprint.", unlocked: (p) => p.flashSessions >= 1 },
+  { id: "table-debut", tier: 1, icon: "◆", title: "Table Debut", copy: "Complete your first Casino shoe.", unlocked: (p) => p.casinoSessions >= 1 },
+  { id: "seven-up", tier: 1, fun: true, icon: "7", title: "Seven Up", copy: "Put together a seven-card streak.", unlocked: (p) => p.bestStreak >= 7 },
+  { id: "night-shift", tier: 1, fun: true, icon: "☾", title: "Night Shift", copy: "Finish a practice session after 10pm.", unlocked: (p) => p.nightSessions >= 1 },
+
+  { id: "hundred-club", tier: 2, icon: "100", title: "Hundred Club", copy: "Count 100 practice cards.", unlocked: (p) => p.totalCards >= 100 },
+  { id: "five-sessions", tier: 2, icon: "5", title: "Finding Rhythm", copy: "Complete five practice sessions.", unlocked: (p) => p.practiceSessions >= 5 },
+  { id: "ten-straight", tier: 2, icon: "10", title: "Ten Straight", copy: "Reach a ten-card answer streak.", unlocked: (p) => p.bestStreak >= 10 },
+  { id: "clean-twenty", tier: 2, icon: "✓", title: "Clean Twenty", copy: "Perfect a 20-card practice session.", unlocked: (p) => p.perfectTwentySessions >= 1 },
+  { id: "back-to-zero", tier: 2, fun: true, icon: "0", title: "Back to Zero", copy: "Finish a practice session on a running count of zero.", unlocked: (p) => p.zeroFinishSessions >= 1 },
+  { id: "triple-header", tier: 2, fun: true, icon: "Ⅲ", title: "Triple Header", copy: "Complete three practice sessions in one day.", unlocked: (p) => p.maxSessionsInDay >= 3 },
+
+  { id: "five-hundred", tier: 3, icon: "500", title: "Five Hundred", copy: "Count 500 practice cards.", unlocked: (p) => p.totalCards >= 500 },
+  { id: "true-converter", tier: 3, icon: "÷", title: "True Converter", copy: "Answer eight true-count lab questions in a row.", unlocked: (p) => p.trueCountBestStreak >= 8 },
+  { id: "flash-point", tier: 3, icon: "⚡", title: "Flash Point", copy: "Perfect a Rapid Flash sprint.", unlocked: (p) => p.flashBestAccuracy >= 100 },
+  { id: "casino-ready", tier: 3, icon: "◆", title: "Casino Ready", copy: "Clear every count checkpoint in a Casino shoe.", unlocked: (p) => p.casinoBestAccuracy >= 100 },
+  { id: "split-personality", tier: 3, fun: true, icon: "↔", title: "Split Personality", copy: "Split five hands in Casino mode.", unlocked: (p) => p.casinoSplits >= 5 },
+  { id: "double-agent", tier: 3, fun: true, icon: "2×", title: "Double Agent", copy: "Double down ten times in Casino mode.", unlocked: (p) => p.casinoDoubles >= 10 },
+
+  { id: "four-figures", tier: 4, icon: "1K", title: "Four Figures", copy: "Count 1,000 practice cards.", unlocked: (p) => p.totalCards >= 1000 },
+  { id: "hot-run", tier: 4, icon: "↗", title: "Hot Run", copy: "Reach a 20-card answer streak.", unlocked: (p) => p.bestStreak >= 20 },
+  { id: "committed", tier: 4, icon: "7D", title: "Committed", copy: "Build a seven-day training streak.", unlocked: (p) => practiceDayStreak(p) >= 7 },
+  { id: "all-rounder", tier: 4, icon: "◎", title: "All-Rounder", copy: "Reach 90% in every card group after 100 attempts each.", unlocked: (p) => groupsMastered(p) },
+  { id: "speed-demon", tier: 4, fun: true, icon: "»", title: "Speed Demon", copy: "Perfect a Rapid Flash sprint at Pit Boss speed.", unlocked: (p) => p.flashPitBossPerfects >= 1 },
+  { id: "full-house", tier: 4, fun: true, icon: "♣", title: "Full House", copy: "Perfect a Casino shoe with three automatic players.", unlocked: (p) => p.casinoThreePlayerPerfects >= 1 },
+
+  { id: "perfect-deck", tier: 5, icon: "52", title: "Perfect Deck", copy: "Score 100% in a 52-card practice session.", unlocked: (p) => p.perfectFullDeckSessions >= 1 },
+  { id: "dedicated", tier: 5, icon: "25", title: "Dedicated", copy: "Complete 25 practice sessions.", unlocked: (p) => p.practiceSessions >= 25 },
+  { id: "month-in-making", tier: 5, icon: "30", title: "Month in the Making", copy: "Train on 30 different days.", unlocked: (p) => new Set(p.practiceDates).size >= 30 },
+  { id: "five-thousand", tier: 5, icon: "5K", title: "Five Thousand", copy: "Count 5,000 practice cards.", unlocked: (p) => p.totalCards >= 5000 },
+  { id: "blackjack-magnet", tier: 5, fun: true, icon: "21", title: "Blackjack Magnet", copy: "Receive ten natural blackjacks in Casino mode.", unlocked: (p) => p.casinoBlackjacks >= 10 },
+  { id: "pit-boss-royalty", tier: 5, fun: true, icon: "★", title: "Pit Boss Royalty", copy: "Perfect five Rapid Flash sprints at Pit Boss speed.", unlocked: (p) => p.flashPitBossPerfects >= 5 },
 ];
 
 const storageKey = "counted-progress-v1";
@@ -80,14 +109,27 @@ const defaultProgress = {
   practiceDates: [],
   flashSessions: 0,
   flashBestAccuracy: 0,
+  flashPitBossPerfects: 0,
   casinoSessions: 0,
   casinoBestAccuracy: 0,
+  casinoThreePlayerPerfects: 0,
+  casinoSplits: 0,
+  casinoDoubles: 0,
+  casinoBlackjacks: 0,
+  practiceSessions: 0,
+  perfectTwentySessions: 0,
+  perfectFullDeckSessions: 0,
+  zeroFinishSessions: 0,
+  nightSessions: 0,
+  sessionDays: {},
+  maxSessionsInDay: 0,
+  trueCountBestStreak: 0,
   xp: 0,
   dailyGoal: { date: "", xp: 0 },
 };
 
 let progress = loadProgress();
-let sessionLength = 40;
+let sessionLength = 20;
 let deck = [];
 let cardIndex = 0;
 let correct = 0;
@@ -99,7 +141,13 @@ let soundOn = loadSoundPreference();
 let audioContext = null;
 const casinoSettingsKey = "counted-casino-rules-v1";
 const defaultCasinoSettings = { autoPlayers: 2, decks: 6, soft17: "stand", doubleAfterSplit: true, surrender: true };
+const casinoPaceProfiles = {
+  tourist: { speed: 1500, checkpointEvery: 2, decisionSeconds: 0 },
+  casino: { speed: 950, checkpointEvery: 3, decisionSeconds: 0 },
+  pitboss: { speed: 600, checkpointEvery: 5, decisionSeconds: 8 },
+};
 let casinoSettings = loadCasinoSettings();
+let casinoPace = "casino";
 let casinoShoe = [];
 let casinoShoeIndex = 0;
 let casinoCutIndex = 0;
@@ -115,8 +163,10 @@ let casinoLosses = 0;
 let casinoPushes = 0;
 let casinoCheckpoints = 0;
 let casinoCorrect = 0;
-let casinoSpeed = 950;
+let casinoSpeed = casinoPaceProfiles[casinoPace].speed;
 let casinoTimer = null;
+let casinoDecisionTimer = null;
+let casinoDecisionSecondsRemaining = 0;
 let casinoPlaying = false;
 let casinoPaused = false;
 let casinoAwaitingCount = false;
@@ -136,16 +186,146 @@ let flashIndex = 0;
 let flashRunningCount = 0;
 let flashCheckpoints = 0;
 let flashCorrect = 0;
-let flashSpeed = 750;
+let flashSpeed = 700;
 let flashStartingDecks = 2;
 let flashTimer = null;
 let flashPlaying = false;
 let flashPaused = false;
 let flashAwaitingCount = false;
 let flashSubmitting = false;
+let learnScrollPosition = 0;
+let navigationFrame = 0;
+let achievementPage = 0;
+let achievementScrollFrame = 0;
+let subscriptionState = {
+  ready: false,
+  isPro: false,
+  productAvailable: false,
+  displayPrice: "£2.99",
+  expirationDate: null,
+};
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+const subscriptionPlugin = () => window.Capacitor?.Plugins?.CountedSubscription;
+
+function subscriptionErrorMessage(error, fallback) {
+  const message = error?.message || error?.errorMessage || "";
+  if (/cancel/i.test(message)) return "Purchase cancelled — nothing was charged.";
+  return message || fallback;
+}
+
+function renderSubscriptionUI() {
+  document.documentElement.dataset.entitlement = subscriptionState.isPro ? "pro" : "free";
+  $$(`[data-pro-feature]`).forEach((element) => {
+    element.classList.toggle("pro-locked", !subscriptionState.isPro);
+  });
+
+  const price = subscriptionState.displayPrice || "£2.99";
+  $("#subscribe-price").textContent = `${price}/year`;
+  $("#subscription-setting-value").textContent = subscriptionState.isPro ? "Active" : `${price}/year`;
+  $("#subscription-setting-copy").textContent = subscriptionState.isPro
+    ? "All advanced training is unlocked"
+    : "Unlimited drills, Casino, Flash and Progress";
+  $("#subscription-open").setAttribute("aria-label", subscriptionState.isPro ? "Counted Pro active, view subscription" : "View Counted Pro");
+  $("#manage-subscription").hidden = !subscriptionState.isPro;
+  $("#subscribe-button").disabled = subscriptionState.isPro;
+  $("#subscribe-button span").textContent = subscriptionState.isPro ? "Counted Pro is active" : "Start Counted Pro";
+
+  if (!subscriptionState.isPro && sessionLength !== 20) {
+    sessionLength = 20;
+    $$(`[data-length]`).forEach((item) => item.classList.toggle("active", item.dataset.length === "20"));
+  }
+}
+
+function showPaywall(requestedFeature = "") {
+  const featureNames = { flash: "Rapid Flash", casino: "Casino", progress: "Progress", practice: "longer practice sessions" };
+  const feature = featureNames[requestedFeature];
+  $("#purchase-feedback").textContent = feature ? `${feature} is included with Counted Pro.` : "";
+  if (!$("#paywall-dialog").open) $("#paywall-dialog").showModal();
+  playSound("tap");
+}
+
+async function refreshSubscriptionStatus() {
+  const plugin = subscriptionPlugin();
+  if (!plugin) {
+    subscriptionState = { ...subscriptionState, ready: true };
+    renderSubscriptionUI();
+    return;
+  }
+
+  try {
+    const status = await plugin.getStatus();
+    subscriptionState = { ...subscriptionState, ...status, ready: true };
+  } catch (error) {
+    subscriptionState = { ...subscriptionState, ready: true };
+    showAppToast(subscriptionErrorMessage(error, "Counted Pro status could not be refreshed."));
+  }
+  renderSubscriptionUI();
+}
+
+async function purchaseSubscription() {
+  const plugin = subscriptionPlugin();
+  if (!plugin) {
+    $("#purchase-feedback").textContent = "Subscriptions are purchased in the Counted iPhone app.";
+    return;
+  }
+  if (!subscriptionState.productAvailable) {
+    $("#purchase-feedback").textContent = "The local StoreKit product is unavailable. Run Counted from the supplied Xcode scheme to test it.";
+    return;
+  }
+
+  const button = $("#subscribe-button");
+  button.disabled = true;
+  $("#purchase-feedback").textContent = "Opening Apple’s purchase sheet…";
+  try {
+    const status = await plugin.purchase();
+    subscriptionState = { ...subscriptionState, ...status, ready: true };
+    renderSubscriptionUI();
+    $("#purchase-feedback").textContent = subscriptionState.isPro ? "Counted Pro is unlocked." : "The purchase is still pending.";
+  } catch (error) {
+    $("#purchase-feedback").textContent = subscriptionErrorMessage(error, "The purchase could not be completed.");
+    button.disabled = subscriptionState.isPro;
+  }
+}
+
+async function restorePurchases() {
+  const plugin = subscriptionPlugin();
+  if (!plugin) {
+    $("#purchase-feedback").textContent = "Restore is available in the Counted iPhone app.";
+    return;
+  }
+  $("#purchase-feedback").textContent = "Checking your Apple Account…";
+  try {
+    const status = await plugin.restore();
+    subscriptionState = { ...subscriptionState, ...status, ready: true };
+    renderSubscriptionUI();
+    $("#purchase-feedback").textContent = subscriptionState.isPro ? "Counted Pro has been restored." : "No active Counted Pro subscription was found.";
+  } catch (error) {
+    $("#purchase-feedback").textContent = subscriptionErrorMessage(error, "Purchases could not be restored.");
+  }
+}
+
+async function manageSubscription() {
+  const plugin = subscriptionPlugin();
+  if (!plugin) return;
+  try {
+    await plugin.manageSubscriptions();
+  } catch (error) {
+    $("#purchase-feedback").textContent = subscriptionErrorMessage(error, "Subscription settings could not be opened.");
+  }
+}
+
+async function initializeSubscription() {
+  const plugin = subscriptionPlugin();
+  if (plugin?.addListener) {
+    plugin.addListener("subscriptionChanged", (status) => {
+      subscriptionState = { ...subscriptionState, ...status, ready: true };
+      renderSubscriptionUI();
+    });
+  }
+  await refreshSubscriptionStatus();
+}
 
 function applyTheme(theme, persist = true) {
   const isDark = theme === "dark";
@@ -193,6 +373,7 @@ function answerTrueCount(value) {
   const scenario = trueCountScenarios[trueCountIndex];
   const isCorrect = value === scenario.answer;
   trueCountStreak = isCorrect ? trueCountStreak + 1 : 0;
+  progress.trueCountBestStreak = Math.max(progress.trueCountBestStreak, trueCountStreak);
   $("#true-count-streak").textContent = trueCountStreak;
 
   $$(`[data-true-count-answer]`).forEach((button) => {
@@ -253,7 +434,26 @@ function loadProgress() {
       ...saved,
       groups: { ...defaultProgress.groups, ...saved.groups },
       dailyGoal: { ...defaultProgress.dailyGoal, ...saved.dailyGoal },
+      sessionDays: { ...defaultProgress.sessionDays, ...saved.sessionDays },
     };
+    const savedSessions = Array.isArray(saved.sessions) ? saved.sessions : [];
+    if (!Number.isFinite(saved.practiceSessions)) merged.practiceSessions = savedSessions.length;
+    if (!Number.isFinite(saved.perfectTwentySessions)) merged.perfectTwentySessions = savedSessions.filter((session) => session.cards === 20 && session.accuracy === 100).length;
+    if (!Number.isFinite(saved.perfectFullDeckSessions)) merged.perfectFullDeckSessions = savedSessions.filter((session) => session.cards === 52 && session.accuracy === 100).length;
+    if (!saved.sessionDays) {
+      merged.sessionDays = savedSessions.reduce((days, session) => {
+        const day = new Date(session.date).toISOString().slice(0, 10);
+        days[day] = (days[day] || 0) + 1;
+        return days;
+      }, {});
+      merged.maxSessionsInDay = Math.max(0, ...Object.values(merged.sessionDays));
+    }
+    if (!Number.isFinite(saved.nightSessions)) {
+      merged.nightSessions = savedSessions.filter((session) => {
+        const hour = new Date(session.date).getHours();
+        return hour >= 22 || hour < 4;
+      }).length;
+    }
     if (!Number.isFinite(saved.xp)) {
       merged.xp = (saved.totalCards || 0) * 2 + (saved.sessions?.length || 0) * 40 + (saved.flashSessions || 0) * 90;
     }
@@ -297,14 +497,11 @@ function awardXP(amount) {
 }
 
 function getValue(rank) {
-  if (["2", "3", "4", "5", "6"].includes(rank)) return 1;
-  if (["7", "8", "9"].includes(rank)) return 0;
-  return -1;
+  return CountedCore.hiLoValue(rank);
 }
 
 function getGroup(rank) {
-  const value = getValue(rank);
-  return value === 1 ? "low" : value === 0 ? "neutral" : "high";
+  return CountedCore.hiLoGroup(rank);
 }
 
 function makeDeck() {
@@ -425,6 +622,7 @@ function renderCasinoTable() {
 
   const seats = casinoSeats.length ? casinoSeats : [makeCasinoSeat("You", true)];
   $("#casino-seats").style.setProperty("--seat-count", seats.length);
+  $("#casino-seats").dataset.seatCount = String(seats.length);
   $("#casino-seats").innerHTML = seats.map((seat) => {
     const hands = seat.hands.map((hand, index) => {
       const active = seat.isUser && casinoPhase === "player" && index === casinoUserHandIndex;
@@ -455,6 +653,70 @@ function casinoWait(multiplier = .38, token = casinoRunToken) {
   return new Promise((resolve) => {
     casinoTimer = window.setTimeout(() => resolve(token === casinoRunToken), Math.max(110, Math.round(casinoSpeed * multiplier)));
   });
+}
+
+function activeCasinoPace() {
+  return casinoPaceProfiles[casinoPace];
+}
+
+function renderCasinoPaceUI() {
+  const profile = activeCasinoPace();
+  casinoSpeed = profile.speed;
+  $$(`[data-casino-pace]`).forEach((button) => button.classList.toggle("active", button.dataset.casinoPace === casinoPace));
+}
+
+function clearCasinoDecisionTimer() {
+  window.clearInterval(casinoDecisionTimer);
+  casinoDecisionTimer = null;
+  casinoDecisionSecondsRemaining = 0;
+  const clock = $("#casino-decision-clock");
+  clock.hidden = true;
+  clock.classList.remove("urgent");
+}
+
+function updateCasinoDecisionClock() {
+  const clock = $("#casino-decision-clock");
+  const total = activeCasinoPace().decisionSeconds;
+  $("#casino-decision-seconds").textContent = casinoDecisionSecondsRemaining;
+  clock.style.setProperty("--decision-progress", `${total ? (casinoDecisionSecondsRemaining / total) * 100 : 0}%`);
+  clock.classList.toggle("urgent", casinoDecisionSecondsRemaining <= 3);
+}
+
+function startCasinoDecisionTimer() {
+  clearCasinoDecisionTimer();
+  const seconds = activeCasinoPace().decisionSeconds;
+  if (!seconds || casinoPhase !== "player") return;
+  casinoDecisionSecondsRemaining = seconds;
+  $("#casino-decision-clock").hidden = false;
+  updateCasinoDecisionClock();
+  casinoDecisionTimer = window.setInterval(() => {
+    if (casinoPhase !== "player" || casinoActionLocked) {
+      clearCasinoDecisionTimer();
+      return;
+    }
+    casinoDecisionSecondsRemaining = CountedCore.nextDecisionSeconds(casinoDecisionSecondsRemaining);
+    updateCasinoDecisionClock();
+    if (CountedCore.hasDecisionTimedOut(casinoDecisionSecondsRemaining)) {
+      clearCasinoDecisionTimer();
+      handleCasinoDecisionTimeout();
+    }
+  }, 1000);
+}
+
+async function handleCasinoDecisionTimeout() {
+  if (casinoPhase !== "player" || casinoActionLocked) return;
+  const hand = casinoUserSeat?.hands[casinoUserHandIndex];
+  if (!hand) return;
+  casinoActionLocked = true;
+  hand.status = "stand";
+  $("#casino-status").textContent = "Time up · auto stand";
+  $("#casino-round-message").textContent = "Pit Boss called time. Your hand stands automatically.";
+  playSound("wrong");
+  if (navigator.vibrate) navigator.vibrate([35, 30, 35]);
+  casinoActionLocked = false;
+  casinoUserHandIndex += 1;
+  renderCasinoTable();
+  await beginCasinoPlayerTurn(casinoRunToken);
 }
 
 async function dealCasinoCardTo(cards, visible, token) {
@@ -582,6 +844,7 @@ async function beginCasinoPlayerTurn(token = casinoRunToken) {
   $("#casino-round-message").textContent = "Choose the correct blackjack action while holding the count.";
   renderCasinoTable();
   updateCasinoActions();
+  startCasinoDecisionTimer();
 }
 
 async function handleCasinoAction(action) {
@@ -592,6 +855,7 @@ async function handleCasinoAction(action) {
   if (action === "split" && !canCasinoSplit(hand, casinoUserSeat)) return;
   if (action === "surrender" && (!casinoSettings.surrender || hand.fromSplit || hand.cards.length !== 2)) return;
 
+  clearCasinoDecisionTimer();
   casinoActionLocked = true;
   updateCasinoActions();
   const token = casinoRunToken;
@@ -603,9 +867,13 @@ async function handleCasinoAction(action) {
     hand.status = "stand";
   } else if (action === "double") {
     hand.doubled = true;
+    progress.casinoDoubles += 1;
+    saveProgress();
     await dealCasinoCardTo(hand.cards, true, token);
     hand.status = casinoHandValue(hand.cards).total > 21 ? "bust" : "stand";
   } else if (action === "split") {
+    progress.casinoSplits += 1;
+    saveProgress();
     await splitCasinoHand(casinoUserSeat, casinoUserHandIndex, token);
   } else if (action === "surrender") {
     hand.status = "surrendered";
@@ -614,11 +882,13 @@ async function handleCasinoAction(action) {
   renderCasinoTable();
   if (action === "split" && !casinoUserSeat.hands[casinoUserHandIndex].status) {
     updateCasinoActions();
+    startCasinoDecisionTimer();
   } else if (casinoUserSeat.hands[casinoUserHandIndex].status) {
     casinoUserHandIndex += 1;
     await beginCasinoPlayerTurn(token);
   } else {
     updateCasinoActions();
+    startCasinoDecisionTimer();
   }
   playSound("tap");
 }
@@ -640,7 +910,13 @@ function resolveCasinoHands() {
 }
 
 function finishCasinoRound() {
+  clearCasinoDecisionTimer();
   resolveCasinoHands();
+  const naturalBlackjacks = casinoUserSeat.hands.filter((hand) => hand.outcome === "Blackjack").length;
+  if (naturalBlackjacks) {
+    progress.casinoBlackjacks += naturalBlackjacks;
+    saveProgress();
+  }
   casinoPhase = "round-end";
   casinoCompletedRounds += 1;
   $("#casino-actions").hidden = true;
@@ -649,7 +925,7 @@ function finishCasinoRound() {
     else if (hand.outcome === "Push") casinoPushes += 1;
     else casinoLosses += 1;
   });
-  casinoCheckDue = casinoRound % 3 === 0 || casinoShoeIndex >= casinoCutIndex;
+  casinoCheckDue = casinoRound % activeCasinoPace().checkpointEvery === 0 || casinoShoeIndex >= casinoCutIndex;
   const summary = casinoUserSeat.hands.map((hand) => hand.outcome).join(" · ");
   $("#casino-status").textContent = "Round complete";
   $(".casino-live").classList.remove("dealing");
@@ -662,6 +938,7 @@ function finishCasinoRound() {
 
 async function playCasinoDealer(token) {
   if (token !== casinoRunToken) return;
+  clearCasinoDecisionTimer();
   casinoPhase = "dealer";
   $("#casino-actions").hidden = true;
   $(".casino-round-bar").hidden = false;
@@ -682,6 +959,7 @@ async function playCasinoDealer(token) {
 async function startCasinoRound() {
   const token = casinoRunToken;
   if (!casinoPlaying || token !== casinoRunToken) return;
+  clearCasinoDecisionTimer();
   if (casinoShoeIndex >= casinoCutIndex) {
     finishCasinoShoe();
     return;
@@ -729,8 +1007,13 @@ async function startCasinoRound() {
 }
 
 function startCasinoShoe() {
+  if (!subscriptionState.isPro) {
+    showPaywall("casino");
+    return;
+  }
   casinoRunToken += 1;
   window.clearTimeout(casinoTimer);
+  clearCasinoDecisionTimer();
   casinoShoe = makeCasinoDeck();
   casinoShoeIndex = 0;
   casinoCutIndex = Math.floor(casinoShoe.length * .75);
@@ -750,6 +1033,7 @@ function startCasinoShoe() {
   $("#casino-result-dialog").open && $("#casino-result-dialog").close();
   $("#casino-count-prompt").hidden = true;
   $("#casino-rules-open").disabled = true;
+  $$(`[data-casino-pace]`).forEach((button) => { button.disabled = true; });
   $("#casino-end").disabled = false;
   $("#casino-start span").textContent = "New shoe";
   $("#casino-start").setAttribute("aria-label", "Start a new shoe");
@@ -761,6 +1045,7 @@ function startCasinoShoe() {
 
 function showCasinoCountPrompt() {
   if (!casinoPlaying || !casinoCheckDue) return;
+  clearCasinoDecisionTimer();
   casinoAwaitingCount = true;
   casinoPhase = "count";
   $("#casino-count-input").value = "0";
@@ -791,6 +1076,7 @@ function finishCasinoShoe() {
   casinoAwaitingCount = false;
   casinoPhase = "complete";
   window.clearTimeout(casinoTimer);
+  clearCasinoDecisionTimer();
   $("#casino-count-prompt").hidden = true;
   $("#casino-actions").hidden = true;
   $(".casino-round-bar").hidden = false;
@@ -800,6 +1086,7 @@ function finishCasinoShoe() {
   $(".casino-live").classList.remove("dealing");
   $("#casino-end").disabled = true;
   $("#casino-rules-open").disabled = false;
+  $$(`[data-casino-pace]`).forEach((button) => { button.disabled = false; });
   $("#casino-start span").textContent = "Deal again";
   $("#casino-start").setAttribute("aria-label", "Deal another shoe");
   releaseScreenWakeLock();
@@ -810,6 +1097,7 @@ function finishCasinoShoe() {
   if (!progress.practiceDates.includes(today)) progress.practiceDates.push(today);
   progress.casinoSessions += 1;
   progress.casinoBestAccuracy = Math.max(progress.casinoBestAccuracy, accuracy);
+  if (casinoCheckpoints && accuracy === 100 && casinoSettings.autoPlayers === 3) progress.casinoThreePlayerPerfects += 1;
   awardXP(20 + casinoCorrect * 20 + casinoWins * 3);
   saveProgress();
   renderProgress();
@@ -938,6 +1226,10 @@ function dealFlashCard() {
 }
 
 function startFlashSprint() {
+  if (!subscriptionState.isPro) {
+    showPaywall("flash");
+    return;
+  }
   window.clearTimeout(flashTimer);
   flashStartingDecks = Number($("#flash-decks").value);
   flashDeck = makeFlashDeck();
@@ -960,6 +1252,7 @@ function startFlashSprint() {
   $("#flash-start span").textContent = "Restart sprint";
   $("#flash-start").setAttribute("aria-label", "Restart sprint");
   $("#flash-decks").disabled = true;
+  $$(`[data-flash-speed]`).forEach((button) => { button.disabled = true; });
   updateFlashUI();
   playSound("start");
   requestScreenWakeLock();
@@ -995,6 +1288,7 @@ function finishFlashSprint() {
   $(".flash-live").classList.remove("flashing");
   $("#flash-pause").disabled = true;
   $("#flash-decks").disabled = false;
+  $$(`[data-flash-speed]`).forEach((button) => { button.disabled = false; });
   $("#flash-start span").textContent = "Sprint again";
   $("#flash-start").setAttribute("aria-label", "Sprint again");
   releaseScreenWakeLock();
@@ -1005,6 +1299,7 @@ function finishFlashSprint() {
   if (!progress.practiceDates.includes(today)) progress.practiceDates.push(today);
   progress.flashSessions += 1;
   progress.flashBestAccuracy = Math.max(progress.flashBestAccuracy, accuracy);
+  if (accuracy === 100 && flashSpeed === 350) progress.flashPitBossPerfects += 1;
   awardXP(accuracy === 100 ? 60 : 25);
   saveProgress();
   renderProgress();
@@ -1051,6 +1346,7 @@ function submitFlashCount(event) {
 }
 
 function startSession() {
+  sessionLength = CountedCore.normalizeSessionLength(sessionLength, subscriptionState.isPro);
   deck = makeDeck();
   cardIndex = 0;
   correct = 0;
@@ -1177,8 +1473,16 @@ function playSound(kind) {
 function finishSession() {
   const accuracy = Math.round((correct / sessionLength) * 100);
   const today = todayKey();
+  const hour = new Date().getHours();
   if (!progress.practiceDates.includes(today)) progress.practiceDates.push(today);
   progress.bestStreak = Math.max(progress.bestStreak, sessionBestStreak);
+  progress.practiceSessions += 1;
+  if (accuracy === 100 && sessionLength === 20) progress.perfectTwentySessions += 1;
+  if (accuracy === 100 && sessionLength === 52) progress.perfectFullDeckSessions += 1;
+  if (runningCount === 0) progress.zeroFinishSessions += 1;
+  if (hour >= 22 || hour < 4) progress.nightSessions += 1;
+  progress.sessionDays[today] = (progress.sessionDays[today] || 0) + 1;
+  progress.maxSessionsInDay = Math.max(progress.maxSessionsInDay, progress.sessionDays[today]);
   progress.sessions.unshift({ date: Date.now(), cards: sessionLength, accuracy, streak: sessionBestStreak });
   progress.sessions = progress.sessions.slice(0, 12);
   awardXP(accuracy >= 90 ? 50 : 25);
@@ -1195,25 +1499,42 @@ function finishSession() {
 }
 
 function navigate(viewName) {
+  if (!CountedCore.canAccessView(viewName, subscriptionState.isPro)) {
+    showPaywall(viewName);
+    return;
+  }
+  const previousView = document.body.dataset.activeView;
+  if (previousView === "learn") learnScrollPosition = window.scrollY;
   if (viewName !== "flash" && flashPlaying && !flashPaused && !flashAwaitingCount) setFlashPaused(true);
   $$(".view").forEach((view) => {
     const active = view.dataset.view === viewName;
     view.hidden = !active;
     view.classList.toggle("active-view", active);
   });
-  $$(`[data-nav]`).forEach((button) => button.classList.toggle("active", button.dataset.nav === viewName));
+  $$(`[data-nav]`).forEach((button) => {
+    const active = button.dataset.nav === viewName;
+    button.classList.toggle("active", active);
+    if (active) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  });
   document.body.dataset.activeView = viewName;
   if (viewName === "progress") renderProgress();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.cancelAnimationFrame(navigationFrame);
+  navigationFrame = window.requestAnimationFrame(() => {
+    const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo(0, viewName === "learn" ? learnScrollPosition : 0);
+    document.documentElement.style.scrollBehavior = previousScrollBehavior;
+  });
 }
 
 function percentage(pair) {
   return pair[1] ? `${Math.round((pair[0] / pair[1]) * 100)}%` : "—";
 }
 
-function practiceDayStreak() {
-  if (!progress.practiceDates.length) return 1;
-  const days = [...new Set(progress.practiceDates)].sort().reverse();
+function practiceDayStreak(source = progress) {
+  if (!source.practiceDates.length) return 1;
+  const days = [...new Set(source.practiceDates)].sort().reverse();
   let streak = 0;
   let cursor = new Date();
   const today = cursor.toISOString().slice(0, 10);
@@ -1225,6 +1546,64 @@ function practiceDayStreak() {
     } else break;
   }
   return Math.max(streak, 1);
+}
+
+function groupsMastered(source) {
+  return Object.values(source.groups).every(([correctAnswers, attempts]) => attempts >= 100 && (correctAnswers / attempts) >= .9);
+}
+
+function achievementCardMarkup(achievement) {
+  const unlocked = achievement.unlocked(progress);
+  const kind = achievement.fun ? "fun" : "milestone";
+  return `<article class="achievement-card ${kind}${unlocked ? " unlocked" : ""}" role="listitem" aria-label="${achievement.title}: ${unlocked ? "unlocked" : achievement.copy}">
+    <span class="achievement-badge" aria-hidden="true">${achievement.icon}</span>
+    <div class="achievement-card-copy">
+      <span class="achievement-card-meta"><em>${achievement.fun ? "Fun challenge" : `Tier ${achievement.tier}`}</em><b>${unlocked ? "Unlocked" : "Locked"}</b></span>
+      <strong>${achievement.title}</strong>
+      <small>${achievement.copy}</small>
+    </div>
+  </article>`;
+}
+
+function updateAchievementPageControls() {
+  const pageCount = Math.ceil(achievementDefinitions.length / achievementPageSize);
+  achievementPage = Math.max(0, Math.min(pageCount - 1, achievementPage));
+  $("#achievement-prev").disabled = achievementPage === 0;
+  $("#achievement-next").disabled = achievementPage === pageCount - 1;
+  $("#achievement-page-status").textContent = `Page ${achievementPage + 1} of ${pageCount} · Tier ${achievementPage + 1}`;
+  $$("#achievement-dots button").forEach((button, index) => {
+    const active = index === achievementPage;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-current", active ? "page" : "false");
+  });
+}
+
+function setAchievementPage(page, smooth = true) {
+  const pageCount = Math.ceil(achievementDefinitions.length / achievementPageSize);
+  achievementPage = Math.max(0, Math.min(pageCount - 1, page));
+  const viewport = $("#achievement-viewport");
+  viewport.scrollTo({ left: viewport.clientWidth * achievementPage, behavior: smooth ? "smooth" : "auto" });
+  updateAchievementPageControls();
+}
+
+function renderAchievements() {
+  const unlockedAchievements = achievementDefinitions.filter((achievement) => achievement.unlocked(progress));
+  const unlockedSignature = unlockedAchievements.map((achievement) => achievement.id).join("|");
+  const track = $("#achievement-grid");
+  const pageCount = Math.ceil(achievementDefinitions.length / achievementPageSize);
+  const needsRender = track.dataset.signature !== unlockedSignature;
+
+  $("#achievement-total").textContent = `${unlockedAchievements.length} / ${achievementDefinitions.length} unlocked`;
+  if (needsRender) {
+    track.dataset.signature = unlockedSignature;
+    track.innerHTML = Array.from({ length: pageCount }, (_, pageIndex) => {
+      const pageAchievements = achievementDefinitions.slice(pageIndex * achievementPageSize, (pageIndex + 1) * achievementPageSize);
+      return `<div class="achievement-page" role="list" aria-label="Achievement tier ${pageIndex + 1}">${pageAchievements.map(achievementCardMarkup).join("")}</div>`;
+    }).join("");
+    $("#achievement-dots").innerHTML = Array.from({ length: pageCount }, (_, index) => `<button type="button" data-achievement-page="${index}" aria-label="Show achievement tier ${index + 1}"></button>`).join("");
+    window.requestAnimationFrame(() => setAchievementPage(achievementPage, false));
+  }
+  updateAchievementPageControls();
 }
 
 function renderProgression() {
@@ -1259,12 +1638,7 @@ function renderProgression() {
     return `<article class="rank-step${isUnlocked ? " unlocked" : ""}${isCurrent ? " current" : ""}"><small>Level ${milestone.level}</small><strong>${milestone.title}</strong><span>${isUnlocked ? (isCurrent ? "Current rank" : "Unlocked") : `${levelThresholds[milestone.level - 1].toLocaleString()} XP`}</span></article>`;
   }).join("");
 
-  const unlockedAchievements = achievementDefinitions.filter((achievement) => achievement.unlocked(progress)).length;
-  $("#achievement-total").textContent = `${unlockedAchievements} / ${achievementDefinitions.length} unlocked`;
-  $("#achievement-grid").innerHTML = achievementDefinitions.map((achievement) => {
-    const unlocked = achievement.unlocked(progress);
-    return `<article class="achievement-card${unlocked ? " unlocked" : ""}"><span class="achievement-badge" aria-hidden="true">${unlocked ? achievement.icon : "·"}</span><div><strong>${achievement.title}</strong><small>${unlocked ? "Unlocked" : achievement.copy}</small></div></article>`;
-  }).join("");
+  renderAchievements();
 }
 
 function renderProgress() {
@@ -1295,7 +1669,12 @@ function renderProgress() {
 $$(`[data-nav]`).forEach((button) => button.addEventListener("click", () => navigate(button.dataset.nav)));
 $$(`[data-answer]`).forEach((button) => button.addEventListener("click", () => answer(Number(button.dataset.answer))));
 $$(`[data-length]`).forEach((button) => button.addEventListener("click", () => {
-  sessionLength = Number(button.dataset.length);
+  const requestedLength = Number(button.dataset.length);
+  if (!CountedCore.canUseSessionLength(requestedLength, subscriptionState.isPro)) {
+    showPaywall("practice");
+    return;
+  }
+  sessionLength = requestedLength;
   $$(`[data-length]`).forEach((item) => item.classList.toggle("active", item === button));
   startSession();
 }));
@@ -1311,9 +1690,29 @@ $("#true-count-options").addEventListener("click", (event) => {
   const button = event.target.closest("[data-true-count-answer]");
   if (button) answerTrueCount(Number(button.dataset.trueCountAnswer));
 });
-$$(`[data-casino-speed]`).forEach((button) => button.addEventListener("click", () => {
-  casinoSpeed = Number(button.dataset.casinoSpeed);
-  $$(`[data-casino-speed]`).forEach((item) => item.classList.toggle("active", item === button));
+$("#achievement-prev").addEventListener("click", () => setAchievementPage(achievementPage - 1));
+$("#achievement-next").addEventListener("click", () => setAchievementPage(achievementPage + 1));
+$("#achievement-dots").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-achievement-page]");
+  if (button) setAchievementPage(Number(button.dataset.achievementPage));
+});
+$("#achievement-viewport").addEventListener("scroll", () => {
+  window.cancelAnimationFrame(achievementScrollFrame);
+  achievementScrollFrame = window.requestAnimationFrame(() => {
+    const viewport = $("#achievement-viewport");
+    if (!viewport.clientWidth) return;
+    const nextPage = Math.round(viewport.scrollLeft / viewport.clientWidth);
+    if (nextPage !== achievementPage) {
+      achievementPage = nextPage;
+      updateAchievementPageControls();
+    }
+  });
+}, { passive: true });
+window.addEventListener("resize", () => setAchievementPage(achievementPage, false));
+$$(`[data-casino-pace]`).forEach((button) => button.addEventListener("click", () => {
+  casinoPace = button.dataset.casinoPace;
+  renderCasinoPaceUI();
+  playSound("tap");
 }));
 $$(`[data-flash-speed]`).forEach((button) => button.addEventListener("click", () => {
   flashSpeed = Number(button.dataset.flashSpeed);
@@ -1325,6 +1724,14 @@ $("#settings-open").addEventListener("click", () => {
   $("#settings-dialog").showModal();
   playSound("tap");
 });
+$("#subscription-open").addEventListener("click", () => {
+  $("#settings-dialog").close();
+  showPaywall();
+});
+$("#paywall-close").addEventListener("click", () => $("#paywall-dialog").close());
+$("#subscribe-button").addEventListener("click", purchaseSubscription);
+$("#restore-purchases").addEventListener("click", restorePurchases);
+$("#manage-subscription").addEventListener("click", manageSubscription);
 $("#sound-toggle").addEventListener("click", () => {
   soundOn = !soundOn;
   try { localStorage.setItem("counted-sound", soundOn ? "on" : "off"); } catch { /* Preference remains in memory. */ }
@@ -1417,8 +1824,11 @@ renderStrategyChart();
 renderTrueCountScenario();
 renderProgress();
 renderCasinoSettingsUI();
+renderCasinoPaceUI();
 renderCasinoTable();
 startSession();
 document.body.dataset.activeView = "practice";
 const requestedView = new URLSearchParams(window.location.search).get("view");
-if (["learn", "practice", "flash", "casino", "progress"].includes(requestedView)) navigate(requestedView);
+initializeSubscription().then(() => {
+  if (["learn", "practice", "flash", "casino", "progress"].includes(requestedView)) navigate(requestedView);
+});
