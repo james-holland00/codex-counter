@@ -20,16 +20,19 @@ test("Hi-Lo groups match their values", () => {
   assert.equal(core.hiLoGroup("A"), "high");
 });
 
-test("free users keep Learn, Practice, and the 20-card drill", () => {
+test("free users keep Learn, Practice, Progress, and the 20-card drill", () => {
   assert.equal(core.canAccessView("learn", false), true);
   assert.equal(core.canAccessView("practice", false), true);
+  assert.equal(core.canAccessView("progress", false), true);
+  assert.equal(core.canAccessView("flash", false), false);
+  assert.equal(core.canAccessView("casino", false), false);
   assert.equal(core.canUseSessionLength(20, false), true);
   assert.equal(core.canUseSessionLength(40, false), false);
   assert.equal(core.canUseSessionLength(52, false), false);
 });
 
 test("Pro unlocks advanced training and longer drills", () => {
-  for (const view of ["flash", "casino", "progress"]) assert.equal(core.canAccessView(view, true), true);
+  for (const view of ["flash", "casino"]) assert.equal(core.canAccessView(view, true), true);
   assert.equal(core.normalizeSessionLength(40, true), 40);
   assert.equal(core.normalizeSessionLength(52, true), 52);
 });

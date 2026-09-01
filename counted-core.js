@@ -5,7 +5,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const PRODUCT_ID = "com.jamesholland.counted.pro.annual";
   const FREE_SESSION_LENGTH = 20;
-  const PRO_VIEWS = new Set(["flash", "casino", "progress"]);
+  const PRO_VIEWS = new Set(["flash", "casino"]);
 
   function hiLoValue(rank) {
     if (["2", "3", "4", "5", "6"].includes(rank)) return 1;

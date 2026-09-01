@@ -22,7 +22,7 @@
         } catch { document.documentElement.dataset.theme = "light"; }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=32" />
+    <link rel="stylesheet" href="styles.css?v=33" />
     <title>Counted — Blackjack Trainer</title>
   </head>
   <body>
@@ -38,7 +38,7 @@
           <button class="active" data-nav="practice" aria-current="page">Practice</button>
           <button data-nav="flash" data-pro-feature>Flash</button>
           <button data-nav="casino" data-pro-feature>Casino</button>
-          <button data-nav="progress" data-pro-feature>Progress</button>
+          <button data-nav="progress">Progress</button>
         </nav>
 
         <div class="topbar-actions">
@@ -442,7 +442,7 @@
         <button class="active" data-nav="practice" aria-current="page"><span aria-hidden="true">♠</span>Practice</button>
         <button data-nav="flash" data-pro-feature><span aria-hidden="true">⚡</span>Flash</button>
         <button data-nav="casino" data-pro-feature><span aria-hidden="true">◆</span>Casino</button>
-        <button data-nav="progress" data-pro-feature><span aria-hidden="true">↗</span>Progress</button>
+        <button data-nav="progress"><span aria-hidden="true">↗</span>Progress</button>
       </nav>
     </div>
 
@@ -464,7 +464,7 @@
         </button>
         <button class="settings-row subscription-row" id="subscription-open" aria-label="View Counted Pro">
           <span class="settings-icon pro-settings-icon" aria-hidden="true">★</span>
-          <span><strong>Counted Pro</strong><small id="subscription-setting-copy">Unlimited drills, Casino, Flash and Progress</small></span>
+          <span><strong>Counted Pro</strong><small id="subscription-setting-copy">Longer drills, Rapid Flash and Casino</small></span>
           <b id="subscription-setting-value">£2.99/year</b>
         </button>
         <a class="settings-row" href="privacy.html">
@@ -489,8 +489,8 @@
       <h2 id="paywall-title">Train without limits.</h2>
       <p id="paywall-copy">Keep the essentials free, then unlock every advanced drill with one simple annual subscription.</p>
       <div class="plan-grid" aria-label="Counted plans">
-        <section><span>Free</span><strong>Learn the system</strong><ul><li>Hi-Lo lessons</li><li>Basic-strategy charts</li><li>20-card practice</li></ul></section>
-        <section class="pro-plan"><span>Pro</span><strong>Build real fluency</strong><ul><li>Unlimited Practice</li><li>Rapid Flash &amp; Casino</li><li>Progress &amp; future modules</li></ul></section>
+        <section><span>Free</span><strong>Build your foundation</strong><ul><li>Hi-Lo lessons</li><li>20-card practice</li><li>Progress &amp; achievements</li></ul></section>
+        <section class="pro-plan"><span>Pro</span><strong>Build real fluency</strong><ul><li>40 &amp; 52-card Practice</li><li>Rapid Flash &amp; Casino</li><li>Future advanced modules</li></ul></section>
       </div>
       <button class="subscribe-button" id="subscribe-button" type="button"><span>Start Counted Pro</span><strong id="subscribe-price">£2.99/year</strong></button>
       <button class="restore-button" id="restore-purchases" type="button">Restore purchases</button>
@@ -583,7 +583,7 @@
 
     <div class="app-toast" id="app-toast" role="status" hidden><span id="app-toast-copy">Ready offline.</span><button id="app-toast-close" aria-label="Dismiss">×</button></div>
 
-    <script src="counted-core.js?v=32" defer></script>
-    <script src="app.js?v=32" defer></script>
+    <script src="counted-core.js?v=33" defer></script>
+    <script src="app.js?v=33" defer></script>
   </body>
 </html>

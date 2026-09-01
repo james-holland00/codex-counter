@@ -226,7 +226,7 @@ function renderSubscriptionUI() {
   $("#subscription-setting-value").textContent = subscriptionState.isPro ? "Active" : `${price}/year`;
   $("#subscription-setting-copy").textContent = subscriptionState.isPro
     ? "All advanced training is unlocked"
-    : "Unlimited drills, Casino, Flash and Progress";
+    : "Longer drills, Rapid Flash and Casino";
   $("#subscription-open").setAttribute("aria-label", subscriptionState.isPro ? "Counted Pro active, view subscription" : "View Counted Pro");
   $("#manage-subscription").hidden = !subscriptionState.isPro;
   $("#subscribe-button").disabled = subscriptionState.isPro;
@@ -239,7 +239,7 @@ function renderSubscriptionUI() {
 }
 
 function showPaywall(requestedFeature = "") {
-  const featureNames = { flash: "Rapid Flash", casino: "Casino", progress: "Progress", practice: "longer practice sessions" };
+  const featureNames = { flash: "Rapid Flash", casino: "Casino", practice: "longer practice sessions" };
   const feature = featureNames[requestedFeature];
   $("#purchase-feedback").textContent = feature ? `${feature} is included with Counted Pro.` : "";
   if (!$("#paywall-dialog").open) $("#paywall-dialog").showModal();

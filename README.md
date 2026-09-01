@@ -16,7 +16,7 @@ Then open [http://localhost:4173](http://localhost:4173).
 
 - Guided Hi-Lo card-value lesson
 - Multi-deck basic-strategy charts for hard totals, soft totals, and pairs
-- Free 20-card practice sessions, with 40- and 52-card sessions in Counted Pro
+- Free 20-card practice sessions and complete Progress tracking, with 40- and 52-card sessions in Counted Pro
 - Round-based Casino Mode with configurable table rules, 0–3 automatic players and running-count checks
 - Rapid Flash true-count sprints with four speeds and adjustable shoe depth
 - Mouse, touch, and keyboard input

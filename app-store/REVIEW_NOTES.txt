@@ -1,15 +1,16 @@
 Counted is a self-contained educational trainer for the Hi-Lo blackjack card-counting system.
 
-No account or sign-in is required. Learn, basic-strategy charts and 20-card Practice are free. Counted Pro is an optional £2.99/year auto-renewable subscription that unlocks longer Practice sessions, Rapid Flash, Casino, Progress and future training modules. The app contains no advertising, analytics or user-generated content. Practice progress and preferences are stored only on the device. The complete core experience, including fonts, is bundled and works offline.
+No account or sign-in is required. Learn, basic-strategy charts, 20-card Practice, Progress and achievements are free. Counted Pro is an optional £2.99/year auto-renewable subscription that unlocks longer Practice sessions, Rapid Flash, Casino and future advanced training modules. The app contains no advertising, analytics or user-generated content. Practice progress and preferences are stored only on the device. The complete core experience, including fonts, is bundled and works offline.
 
 The app does not accept wagers, simulate betting balances, award prizes, connect to gambling operators or provide real-money gambling services. Casino Mode simulates blackjack rounds solely for training: the user chooses standard actions, automatic players and dealer rules consume cards from an offline shoe, and the app periodically checks the running count. There are no chips, balances, odds, purchases or links to gambling services.
 
 Suggested review path:
 1. The app opens on Practice.
 2. Tap +1, 0 or −1 to classify the displayed card.
-3. Tap Flash, Casino or Progress to view the Counted Pro purchase screen.
-4. Use the supplied App Review subscription account to purchase or restore Counted Pro, then open Flash and Casino from the bottom navigation.
-5. Tap the arrow button to start either timed drill.
-6. Open Settings from the top-right gear to view or manage Counted Pro, sound, appearance, privacy and support.
+3. Tap Progress to confirm that progression, achievements and session history are available without a purchase.
+4. Tap Flash or Casino to view the Counted Pro purchase screen.
+5. Use the supplied App Review subscription account to purchase or restore Counted Pro, then open Flash and Casino from the bottom navigation.
+6. Tap the arrow button to start either timed drill.
+7. Open Settings from the top-right gear to view or manage Counted Pro, sound, appearance, privacy and support.
 
 There are no hidden features or external accessories.

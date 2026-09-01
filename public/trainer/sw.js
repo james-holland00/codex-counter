@@ -1,11 +1,11 @@
-const CACHE = "counted-v32";
+const CACHE = "counted-v33";
 const ASSETS = [
   "index.html",
   "privacy.html",
   "support.html",
-  "styles.css?v=32",
-  "counted-core.js?v=32",
-  "app.js?v=32",
+  "styles.css?v=33",
+  "counted-core.js?v=33",
+  "app.js?v=33",
   "manifest.webmanifest",
   "assets/icon.svg",
   "assets/icon-192.png",

@@ -16,7 +16,7 @@ This file contains a working first-release listing. Text marked **INPUT REQUIRED
 - Copyright: `© 2026 James Holland`
 - Privacy policy URL: **INPUT REQUIRED — publish `privacy.html` and paste its HTTPS URL**
 - Support URL: **INPUT REQUIRED — publish `support.html` and paste its HTTPS URL**
-- Support email: **INPUT REQUIRED — reserve a free public address, then replace `SUPPORT_EMAIL_GOES_HERE` in `support.html`**
+- Support email: `counted.help@outlook.com`
 
 ## In-App Purchase
 
@@ -26,8 +26,8 @@ This file contains a working first-release listing. Text marked **INPUT REQUIRED
 - Subscription group: `Counted Pro`
 - Duration: `1 year`
 - UK price: `£2.99`
-- Free tier: Hi-Lo lessons, basic-strategy charts and 20-card Practice
-- Pro tier: unlimited 20/40/52-card Practice, Rapid Flash, Casino, Progress and future training modules
+- Free tier: Hi-Lo lessons, basic-strategy charts, 20-card Practice, Progress and achievements
+- Pro tier: 40/52-card Practice, Rapid Flash, Casino and future advanced training modules
 - Free trial: none for version 1.0
 
 The same product is already defined in `ios/App/App/Counted.storekit` for local testing before App Store Connect exists. Recreate the identifiers exactly in App Store Connect after enrolment.
@@ -47,7 +47,7 @@ Learn the three card-value groups, make recognition automatic and build the conc
 TRAIN WITH PURPOSE
 
 • Practise +1, 0 and −1 card values without answer hints
-• Start free with focused 20-card sessions
+• Start free with focused 20-card sessions and complete Progress tracking
 • Upgrade to Counted Pro for longer sessions and complete simulated blackjack rounds
 • Build speed with Pro’s Rapid Flash true-count sprints
 • Study hard totals, soft totals and pairs in the included basic-strategy charts

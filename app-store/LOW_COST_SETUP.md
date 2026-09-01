@@ -2,13 +2,12 @@
 
 ## Public support email — £0
 
-Create an Outlook.com alias dedicated to Counted, ideally `counted.support@outlook.com`
-or the closest available professional variation. An alias uses the existing Microsoft
+The Counted support alias is `counted.help@outlook.com`. It uses the existing Microsoft
 inbox and can also be selected in the From field, so it avoids a second mailbox and a
 second password.
 
-After reserving the address, replace `SUPPORT_EMAIL_GOES_HERE` in `support.html`, copy
-the same change to `public/trainer/support.html`, and run `npm run ios:sync`.
+The address is included in the support page, privacy contact and App Store submission
+pack. Keep the alias active and check it before each release.
 
 Do not buy a custom domain or paid mailbox for version 1.0. Reconsider a domain only
 after the app has enough renewals to justify the recurring cost.
