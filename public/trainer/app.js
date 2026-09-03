@@ -197,6 +197,7 @@ let learnScrollPosition = 0;
 let navigationFrame = 0;
 let achievementPage = 0;
 let achievementScrollFrame = 0;
+let paywallScrollPosition = 0;
 let subscriptionState = {
   ready: false,
   isPro: false,
@@ -238,11 +239,31 @@ function renderSubscriptionUI() {
   }
 }
 
+function setPaywallScrollLock(locked) {
+  if (locked) {
+    if (document.body.classList.contains("paywall-open")) return;
+    paywallScrollPosition = window.scrollY;
+    document.documentElement.classList.add("paywall-open");
+    document.body.classList.add("paywall-open");
+    document.body.style.setProperty("--paywall-scroll-offset", `-${paywallScrollPosition}px`);
+    return;
+  }
+
+  if (!document.body.classList.contains("paywall-open")) return;
+  document.documentElement.classList.remove("paywall-open");
+  document.body.classList.remove("paywall-open");
+  document.body.style.removeProperty("--paywall-scroll-offset");
+  window.scrollTo(0, paywallScrollPosition);
+}
+
 function showPaywall(requestedFeature = "") {
   const featureNames = { flash: "Rapid Flash", casino: "Casino", practice: "longer practice sessions" };
   const feature = featureNames[requestedFeature];
   $("#purchase-feedback").textContent = feature ? `${feature} is included with Counted Pro.` : "";
-  if (!$("#paywall-dialog").open) $("#paywall-dialog").showModal();
+  if (!$("#paywall-dialog").open) {
+    setPaywallScrollLock(true);
+    $("#paywall-dialog").showModal();
+  }
   playSound("tap");
 }
 
@@ -1729,6 +1750,7 @@ $("#subscription-open").addEventListener("click", () => {
   showPaywall();
 });
 $("#paywall-close").addEventListener("click", () => $("#paywall-dialog").close());
+$("#paywall-dialog").addEventListener("close", () => setPaywallScrollLock(false));
 $("#subscribe-button").addEventListener("click", purchaseSubscription);
 $("#restore-purchases").addEventListener("click", restorePurchases);
 $("#manage-subscription").addEventListener("click", manageSubscription);

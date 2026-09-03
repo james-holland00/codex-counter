@@ -1,0 +1,59 @@
+name: iOS release archive
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    runs-on: macos-26
+    timeout-minutes: 25
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Verify production toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          xcodebuild -showsdks
+      - name: Prepare bundled app
+        run: |
+          npm ci
+          node --check app.js
+          node --check counted-core.js
+          npm test
+          npm run ios:sync
+          cmp app.js ios/App/App/public/app.js
+          cmp styles.css ios/App/App/public/styles.css
+      - name: Build unsigned release archive
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Counted.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/CountedDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            archive
+      - name: Package archive for local signing
+        run: |
+          tar -czf "$RUNNER_TEMP/Counted-xcarchive.tar.gz" -C "$RUNNER_TEMP" Counted.xcarchive
+          shasum -a 256 "$RUNNER_TEMP/Counted-xcarchive.tar.gz" > "$RUNNER_TEMP/Counted-xcarchive.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Counted-unsigned-release
+          path: |
+            ${{ runner.temp }}/Counted-xcarchive.tar.gz
+            ${{ runner.temp }}/Counted-xcarchive.sha256
+          if-no-files-found: error
+          retention-days: 7
