@@ -24,17 +24,50 @@ test("free users keep Learn, Practice, Progress, and the 20-card drill", () => {
   assert.equal(core.canAccessView("learn", false), true);
   assert.equal(core.canAccessView("practice", false), true);
   assert.equal(core.canAccessView("progress", false), true);
-  assert.equal(core.canAccessView("flash", false), false);
-  assert.equal(core.canAccessView("casino", false), false);
+  assert.equal(core.canAccessView("flash", false), true);
+  assert.equal(core.canAccessView("casino", false), true);
   assert.equal(core.canUseSessionLength(20, false), true);
   assert.equal(core.canUseSessionLength(40, false), false);
   assert.equal(core.canUseSessionLength(52, false), false);
 });
 
 test("Pro unlocks advanced training and longer drills", () => {
-  for (const view of ["flash", "casino"]) assert.equal(core.canAccessView(view, true), true);
+  for (const view of ["flash", "casino"]) {
+    assert.equal(core.canAccessView(view, true, { flash: true, casino: true }), true);
+    assert.equal(core.canStartProSession(view, true, { flash: true, casino: true }), true);
+  }
   assert.equal(core.normalizeSessionLength(40, true), 40);
   assert.equal(core.normalizeSessionLength(52, true), 52);
+});
+
+test("free sessions are independent and become locked only when consumed", () => {
+  for (const mode of ["flash", "casino"]) {
+    const other = mode === "flash" ? "casino" : "flash";
+    const used = { [mode]: true };
+    assert.equal(core.canStartProSession(mode, false), true);
+    assert.equal(core.canStartProSession(mode, false, used), false);
+    assert.equal(core.canAccessView(mode, false, used), false);
+    assert.equal(core.canAccessView(other, false, used), true);
+    assert.equal(core.canStartProSession(other, false, used), true);
+  }
+});
+
+test("an active session remains accessible but cannot start a second free session", () => {
+  for (const mode of ["flash", "casino"]) {
+    const used = { flash: true, casino: true };
+    assert.equal(core.canAccessView(mode, false, used, true), true);
+    assert.equal(core.canStartProSession(mode, false, used), false);
+    assert.equal(core.canAccessView(mode, false, used, false), false);
+  }
+});
+
+test("legacy progress gets both allowances and stale saves never undo a use", () => {
+  const fresh = core.mergeFreeSessionsUsed(undefined);
+  assert.equal(fresh.flash, false);
+  assert.equal(fresh.casino, false);
+  const merged = core.mergeFreeSessionsUsed({ flash: true }, { flash: false, casino: true });
+  assert.equal(merged.flash, true);
+  assert.equal(merged.casino, true);
 });
 
 test("locked or invalid session lengths fall back safely", () => {

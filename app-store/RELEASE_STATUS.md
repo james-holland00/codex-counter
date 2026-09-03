@@ -48,7 +48,7 @@ The previous local `npm run verify` also passed the production web build. Compil
 - UK price verified through Apple’s API: **GBP 2.99**. UK availability is configured for the initial purchase test.
 - English (UK) group and product localizations are saved.
 - Review image: `screenshots/6.9-inch/06-counted-pro.png`; Apple asset state `COMPLETE`.
-- Apple still reports `MISSING_METADATA`; inspect any remaining account/product requirements if the product does not load in TestFlight. The Paid Applications Agreement must be signed for sandbox purchase testing; its status has not been verified through the API.
+- Apple still reports `MISSING_METADATA`; inspect any remaining account/product requirements if the product does not load in TestFlight. The owner confirmed signing the Paid Apps Agreement on 3 September 2026. Apple’s account/product changes may still be propagating.
 - Do not submit the subscription for production review yet. Native sandbox purchase and restore still need verification on the installed beta.
 
 ## Later, after beta feedback

@@ -34,11 +34,7 @@ final class CountedSubscriptionPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func getStatus(_ call: CAPPluginCall) {
         Task {
-            do {
-                call.resolve(try await status())
-            } catch {
-                call.reject("Counted Pro status is unavailable.", nil, error)
-            }
+            call.resolve(await status())
         }
     }
 
@@ -49,7 +45,8 @@ final class CountedSubscriptionPlugin: CAPPlugin, CAPBridgedPlugin {
                     return call.reject("Purchases are not allowed on this device.")
                 }
                 guard let product = try await Product.products(for: [productID]).first else {
-                    return call.reject("Counted Pro is not available in the current StoreKit environment.")
+                    NSLog("[CountedSubscription] App Store returned no product for %@", productID)
+                    return call.reject("Counted Pro isn’t available from the App Store right now. Please try again later.", "PRODUCT_UNAVAILABLE")
                 }
 
                 switch try await product.purchase() {
@@ -58,11 +55,11 @@ final class CountedSubscriptionPlugin: CAPPlugin, CAPBridgedPlugin {
                         return call.reject("Apple could not verify this purchase.")
                     }
                     await transaction.finish()
-                    let updated = try await status()
+                    let updated = await status(product: product)
                     call.resolve(updated)
                     notifyListeners("subscriptionChanged", data: updated)
                 case .pending:
-                    var pending = try await status()
+                    var pending = await status(product: product)
                     pending["pending"] = true
                     call.resolve(pending)
                 case .userCancelled:
@@ -71,7 +68,8 @@ final class CountedSubscriptionPlugin: CAPPlugin, CAPBridgedPlugin {
                     call.reject("The purchase returned an unknown result.")
                 }
             } catch {
-                call.reject("The purchase could not be completed.", nil, error)
+                NSLog("[CountedSubscription] Purchase failed: %@", error.localizedDescription)
+                call.reject("Apple couldn’t complete the purchase. Check your connection and try again.", "PURCHASE_FAILED", error)
             }
         }
     }
@@ -80,7 +78,7 @@ final class CountedSubscriptionPlugin: CAPPlugin, CAPBridgedPlugin {
         Task {
             do {
                 try await AppStore.sync()
-                let updated = try await status()
+                let updated = await status()
                 call.resolve(updated)
                 notifyListeners("subscriptionChanged", data: updated)
             } catch {
@@ -106,9 +104,7 @@ final class CountedSubscriptionPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    private func status() async throws -> [String: Any] {
-        let products = try await Product.products(for: [productID])
-        let product = products.first
+    private func status(product knownProduct: Product? = nil) async -> [String: Any] {
         var isPro = false
         var expirationDate: Date?
 
@@ -119,6 +115,18 @@ final class CountedSubscriptionPlugin: CAPPlugin, CAPBridgedPlugin {
             isPro = true
             expirationDate = transaction.expirationDate
         }
+
+        // Verified ownership is independent of a network request for price/product metadata.
+        // Reuse the purchased product so a second network failure cannot mask a successful purchase.
+        var product = knownProduct
+        if product == nil {
+            do {
+                product = try await Product.products(for: [productID]).first
+            } catch {
+                NSLog("[CountedSubscription] Product lookup failed: %@", error.localizedDescription)
+            }
+        }
+        NSLog("[CountedSubscription] Status: pro=%@ productAvailable=%@", String(isPro), String(product != nil))
 
         var result: [String: Any] = [
             "productID": productID,
@@ -133,7 +141,7 @@ final class CountedSubscriptionPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     private func publishStatus() async {
-        guard let current = try? await status() else { return }
+        let current = await status()
         notifyListeners("subscriptionChanged", data: current)
     }
 }

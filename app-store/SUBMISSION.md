@@ -10,7 +10,7 @@ This file contains a working first-release listing. Text marked **INPUT REQUIRED
 - Primary category: `Education`
 - Secondary category: `Games`
 - Version: `1.0`
-- Build: `2`
+- Build: `3`
 - Price: `Free download`; Counted Pro is `£2.99/year`
 - Availability: iPhone only
 - Copyright: `© 2026 James Holland`
@@ -31,9 +31,9 @@ Both HTTPS pages were verified without authentication on 3 September 2026. See `
 - Subscription group: `Counted Pro`
 - Duration: `1 year`
 - UK price: `£2.99`
-- Free tier: Hi-Lo lessons, basic-strategy charts, 20-card Practice, Progress and achievements
-- Pro tier: 40/52-card Practice, Rapid Flash, Casino and future advanced training modules
-- Free trial: none for version 1.0
+- Free tier: Hi-Lo lessons, basic-strategy charts, 20-card Practice, Progress and achievements, plus one Rapid Flash sprint and one Casino shoe
+- Pro tier: 40/52-card Practice, unlimited Rapid Flash, unlimited Casino and future advanced training modules
+- Subscription introductory trial: none. The two independent free training sessions are device-local allowances, consumed only when Start is pressed.
 - English display name: `Counted Pro Annual`
 - English description: `Longer Practice, Rapid Flash and Casino training.`
 - App Review screenshot: `screenshots/6.9-inch/06-counted-pro.png`
@@ -121,8 +121,8 @@ Use Apple’s currently accepted 6.9-inch iPhone size first. Additional sizes ca
 
 The owner chose beta testing before App Store submission. App record, API access, paid-team signing, draft listing, review contact and Counted Pro metadata have been configured. A stable-Xcode build is uploaded and valid; internal testing is enabled and external TestFlight review is pending. See `RELEASE_STATUS.md` and `BETA_TESTING.md` for verified state and the testing checklist.
 
-1. Install build 1.0 (2) through TestFlight and check free training, native Pro purchase, restore, offline use and layout.
-2. Confirm the Paid Apps Agreement is signed so Apple sandbox purchase testing can work; resolve the subscription's remaining `MISSING_METADATA` status if product loading fails.
+1. Install the latest build of version 1.0 through TestFlight and check free training, native Pro purchase, restore, offline use and layout.
+2. The owner confirmed the Paid Apps Agreement is signed. Verify sandbox purchases and resolve the subscription's remaining `MISSING_METADATA` status if product loading fails.
 3. Gather beta feedback and revise the app, screenshots and listing copy.
 4. Before production submission, complete age rating, privacy, content rights, price, launch territories and any outstanding tax/banking information.
 5. Verify the final signed build against the screenshots, attach the first subscription, and keep untested Mac and Apple Vision availability disabled.

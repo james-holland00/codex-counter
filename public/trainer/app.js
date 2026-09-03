@@ -116,6 +116,7 @@ const defaultProgress = {
   casinoSplits: 0,
   casinoDoubles: 0,
   casinoBlackjacks: 0,
+  freeSessionsUsed: { flash: false, casino: false },
   practiceSessions: 0,
   perfectTwentySessions: 0,
   perfectFullDeckSessions: 0,
@@ -198,6 +199,10 @@ let navigationFrame = 0;
 let achievementPage = 0;
 let achievementScrollFrame = 0;
 let paywallScrollPosition = 0;
+let subscriptionPurchasePending = false;
+// Only the live session survives navigation. Reloading abandons it; the saved use remains.
+const freeSessionRuns = { flash: false, casino: false };
+const sessionStartsPending = { flash: false, casino: false };
 let subscriptionState = {
   ready: false,
   isPro: false,
@@ -210,6 +215,48 @@ const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 const subscriptionPlugin = () => window.Capacitor?.Plugins?.CountedSubscription;
 
+function isModePlaying(mode) {
+  return mode === "flash" ? flashPlaying : mode === "casino" && casinoPlaying;
+}
+
+function canOpenMode(mode) {
+  return CountedCore.canAccessView(mode, subscriptionState.isPro, progress.freeSessionsUsed, isModePlaying(mode));
+}
+
+async function beginProSession(mode) {
+  await subscriptionReady;
+  if (subscriptionState.isPro) {
+    freeSessionRuns[mode] = false;
+    return true;
+  }
+  if (isModePlaying(mode)) return false;
+
+  const consume = () => {
+    if (isModePlaying(mode)) return false;
+    try {
+      // Re-read before starting so another tab cannot spend the same allowance again.
+      const saved = JSON.parse(localStorage.getItem(storageKey));
+      progress.freeSessionsUsed = CountedCore.mergeFreeSessionsUsed(progress.freeSessionsUsed, saved?.freeSessionsUsed);
+      if (!CountedCore.canStartProSession(mode, false, progress.freeSessionsUsed)) {
+        renderSubscriptionUI();
+        showPaywall(mode);
+        return false;
+      }
+      const used = { ...progress.freeSessionsUsed, [mode]: true };
+      // Commit before dealing. A failed write must not grant a repeatable session.
+      localStorage.setItem(storageKey, JSON.stringify({ ...progress, ...saved, freeSessionsUsed: used }));
+      progress.freeSessionsUsed = used;
+      freeSessionRuns[mode] = true;
+      return true;
+    } catch {
+      showAppToast("Your free session couldn’t be saved. Please enable local storage and try again.");
+      return false;
+    }
+  };
+  // Serialize simultaneous starts across tabs where Web Locks are supported.
+  return navigator.locks ? navigator.locks.request(`${storageKey}-free-sessions`, consume) : consume();
+}
+
 function subscriptionErrorMessage(error, fallback) {
   const message = error?.message || error?.errorMessage || "";
   if (/cancel/i.test(message)) return "Purchase cancelled — nothing was charged.";
@@ -219,18 +266,39 @@ function subscriptionErrorMessage(error, fallback) {
 function renderSubscriptionUI() {
   document.documentElement.dataset.entitlement = subscriptionState.isPro ? "pro" : "free";
   $$(`[data-pro-feature]`).forEach((element) => {
-    element.classList.toggle("pro-locked", !subscriptionState.isPro);
+    const mode = element.dataset.nav;
+    element.classList.toggle("pro-locked", subscriptionState.ready && (mode ? !canOpenMode(mode) : !subscriptionState.isPro));
   });
+  for (const mode of CountedCore.PRO_VIEWS) {
+    const available = subscriptionState.ready && !subscriptionState.isPro && !progress.freeSessionsUsed[mode];
+    const playing = isModePlaying(mode);
+    const name = mode === "flash" ? "Rapid Flash" : "Casino Mode";
+    $$(`[data-nav="${mode}"]`).forEach((element) => {
+      element.classList.toggle("free-session-available", available);
+      const label = element.id === "quick-sprint" ? "Quick sprint" : name;
+      element.setAttribute("aria-label", `${label}${available ? ", 1 free session" : subscriptionState.ready && !canOpenMode(mode) ? ", requires Counted Pro" : ""}`);
+    });
+    $$(`[data-free-session="${mode}"]`).forEach((element) => { element.hidden = !available; });
+    const status = $(`#${mode}-status`);
+    if (available && !playing) status.textContent = "1 free session";
+    else if (status.textContent === "1 free session") status.textContent = mode === "flash" ? "Ready to flash" : "Table ready";
+    $(`#${mode}-start`).disabled = !subscriptionState.ready || (!subscriptionState.isPro && playing);
+    const usedFreeSession = !subscriptionState.isPro && freeSessionRuns[mode] && !playing;
+    $(`#${mode}-trial-result`).hidden = !usedFreeSession;
+    $(`#${mode}-again`).innerHTML = usedFreeSession ? "Unlock unlimited <span>→</span>" : mode === "flash" ? "Sprint again <span>↻</span>" : "New shoe <span>↻</span>";
+  }
 
   const price = subscriptionState.displayPrice || "£2.99";
   $("#subscribe-price").textContent = `${price}/year`;
+  $("#free-plan-sessions").hidden = subscriptionState.isPro;
+  $("#paywall-copy").textContent = `Unlock unlimited Rapid Flash + Casino Mode with Counted Pro for ${price}/year.`;
   $("#subscription-setting-value").textContent = subscriptionState.isPro ? "Active" : `${price}/year`;
   $("#subscription-setting-copy").textContent = subscriptionState.isPro
     ? "All advanced training is unlocked"
     : "Longer drills, Rapid Flash and Casino";
   $("#subscription-open").setAttribute("aria-label", subscriptionState.isPro ? "Counted Pro active, view subscription" : "View Counted Pro");
   $("#manage-subscription").hidden = !subscriptionState.isPro;
-  $("#subscribe-button").disabled = subscriptionState.isPro;
+  $("#subscribe-button").disabled = subscriptionState.isPro || subscriptionPurchasePending;
   $("#subscribe-button span").textContent = subscriptionState.isPro ? "Counted Pro is active" : "Start Counted Pro";
 
   if (!subscriptionState.isPro && sessionLength !== 20) {
@@ -286,26 +354,26 @@ async function refreshSubscriptionStatus() {
 }
 
 async function purchaseSubscription() {
+  if (subscriptionPurchasePending || subscriptionState.isPro) return;
   const plugin = subscriptionPlugin();
   if (!plugin) {
     $("#purchase-feedback").textContent = "Subscriptions are purchased in the Counted iPhone app.";
     return;
   }
-  if (!subscriptionState.productAvailable) {
-    $("#purchase-feedback").textContent = "The local StoreKit product is unavailable. Run Counted from the supplied Xcode scheme to test it.";
-    return;
-  }
-
   const button = $("#subscribe-button");
+  subscriptionPurchasePending = true;
   button.disabled = true;
-  $("#purchase-feedback").textContent = "Opening Apple’s purchase sheet…";
+  $("#purchase-feedback").textContent = "Connecting to the App Store…";
   try {
+    // Native purchase fetches the current product; an earlier lookup failure must not block retries.
     const status = await plugin.purchase();
     subscriptionState = { ...subscriptionState, ...status, ready: true };
     renderSubscriptionUI();
     $("#purchase-feedback").textContent = subscriptionState.isPro ? "Counted Pro is unlocked." : "The purchase is still pending.";
   } catch (error) {
     $("#purchase-feedback").textContent = subscriptionErrorMessage(error, "The purchase could not be completed.");
+  } finally {
+    subscriptionPurchasePending = false;
     button.disabled = subscriptionState.isPro;
   }
 }
@@ -456,6 +524,8 @@ function loadProgress() {
       groups: { ...defaultProgress.groups, ...saved.groups },
       dailyGoal: { ...defaultProgress.dailyGoal, ...saved.dailyGoal },
       sessionDays: { ...defaultProgress.sessionDays, ...saved.sessionDays },
+      // Legacy completed sessions predate this offer and do not consume it.
+      freeSessionsUsed: CountedCore.mergeFreeSessionsUsed(saved.freeSessionsUsed),
     };
     const savedSessions = Array.isArray(saved.sessions) ? saved.sessions : [];
     if (!Number.isFinite(saved.practiceSessions)) merged.practiceSessions = savedSessions.length;
@@ -486,6 +556,9 @@ function loadProgress() {
 }
 
 function saveProgress() {
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(storageKey)); } catch { /* Repair malformed legacy progress on the next save. */ }
+  progress.freeSessionsUsed = CountedCore.mergeFreeSessionsUsed(progress.freeSessionsUsed, saved?.freeSessionsUsed);
   localStorage.setItem(storageKey, JSON.stringify(progress));
 }
 
@@ -1027,11 +1100,12 @@ async function startCasinoRound() {
   await beginCasinoPlayerTurn(token);
 }
 
-function startCasinoShoe() {
-  if (!subscriptionState.isPro) {
-    showPaywall("casino");
-    return;
-  }
+async function startCasinoShoe() {
+  if (sessionStartsPending.casino) return;
+  sessionStartsPending.casino = true;
+  let allowed;
+  try { allowed = await beginProSession("casino"); } finally { sessionStartsPending.casino = false; }
+  if (!allowed) return;
   casinoRunToken += 1;
   window.clearTimeout(casinoTimer);
   clearCasinoDecisionTimer();
@@ -1058,6 +1132,7 @@ function startCasinoShoe() {
   $("#casino-end").disabled = false;
   $("#casino-start span").textContent = "New shoe";
   $("#casino-start").setAttribute("aria-label", "Start a new shoe");
+  renderSubscriptionUI();
   playSound("start");
   requestScreenWakeLock();
   updateCasinoUI();
@@ -1127,6 +1202,7 @@ function finishCasinoShoe() {
   $("#casino-result-copy").textContent = `${casinoCompletedRounds} ${casinoCompletedRounds === 1 ? "round" : "rounds"} completed under live table rules. ${casinoCorrect} of ${casinoCheckpoints} count checks correct.`;
   $("#casino-result-accuracy").textContent = casinoCheckpoints ? `${accuracy}%` : "—";
   $("#casino-result-record").textContent = `${casinoWins}–${casinoLosses}–${casinoPushes}`;
+  renderSubscriptionUI();
   $("#casino-result-dialog").showModal();
 }
 
@@ -1246,11 +1322,12 @@ function dealFlashCard() {
   }
 }
 
-function startFlashSprint() {
-  if (!subscriptionState.isPro) {
-    showPaywall("flash");
-    return;
-  }
+async function startFlashSprint() {
+  if (sessionStartsPending.flash) return;
+  sessionStartsPending.flash = true;
+  let allowed;
+  try { allowed = await beginProSession("flash"); } finally { sessionStartsPending.flash = false; }
+  if (!allowed) return;
   window.clearTimeout(flashTimer);
   flashStartingDecks = Number($("#flash-decks").value);
   flashDeck = makeFlashDeck();
@@ -1274,6 +1351,7 @@ function startFlashSprint() {
   $("#flash-start").setAttribute("aria-label", "Restart sprint");
   $("#flash-decks").disabled = true;
   $$(`[data-flash-speed]`).forEach((button) => { button.disabled = true; });
+  renderSubscriptionUI();
   updateFlashUI();
   playSound("start");
   requestScreenWakeLock();
@@ -1302,6 +1380,7 @@ function adjustFlashCount(delta) {
 }
 
 function finishFlashSprint() {
+  if (!flashPlaying) return;
   flashPlaying = false;
   flashAwaitingCount = false;
   window.clearTimeout(flashTimer);
@@ -1329,6 +1408,7 @@ function finishFlashSprint() {
   $("#flash-result-copy").textContent = accuracy === 100 ? "You converted every checkpoint correctly." : "Own the slower pace before moving the cards faster.";
   $("#flash-result-accuracy").textContent = `${accuracy}%`;
   $("#flash-result-count").textContent = signedCount(flashRunningCount);
+  renderSubscriptionUI();
   $("#flash-result-dialog").showModal();
 }
 
@@ -1519,8 +1599,9 @@ function finishSession() {
   $("#session-dialog").showModal();
 }
 
-function navigate(viewName) {
-  if (!CountedCore.canAccessView(viewName, subscriptionState.isPro)) {
+async function navigate(viewName) {
+  if (!subscriptionState.ready && CountedCore.PRO_VIEWS.has(viewName)) await subscriptionReady;
+  if (!canOpenMode(viewName)) {
     showPaywall(viewName);
     return;
   }
@@ -1816,6 +1897,13 @@ $("#flash-leave").addEventListener("click", () => { $("#flash-result-dialog").cl
 $("#app-toast-close").addEventListener("click", () => { $("#app-toast").hidden = true; });
 window.addEventListener("offline", () => showAppToast("You’re offline — training still works."));
 window.addEventListener("online", () => showAppToast("Back online."));
+window.addEventListener("storage", (event) => {
+  if (event.key !== storageKey || !event.newValue) return;
+  try {
+    progress.freeSessionsUsed = CountedCore.mergeFreeSessionsUsed(progress.freeSessionsUsed, JSON.parse(event.newValue).freeSessionsUsed);
+    renderSubscriptionUI();
+  } catch { /* Ignore malformed external progress without resetting allowances. */ }
+});
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && ((casinoPlaying && !casinoPaused) || (flashPlaying && !flashPaused))) requestScreenWakeLock();
 });
@@ -1851,6 +1939,8 @@ renderCasinoTable();
 startSession();
 document.body.dataset.activeView = "practice";
 const requestedView = new URLSearchParams(window.location.search).get("view");
-initializeSubscription().then(() => {
+renderSubscriptionUI();
+const subscriptionReady = initializeSubscription();
+subscriptionReady.then(() => {
   if (["learn", "practice", "flash", "casino", "progress"].includes(requestedView)) navigate(requestedView);
 });

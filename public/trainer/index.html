@@ -22,7 +22,7 @@
         } catch { document.documentElement.dataset.theme = "light"; }
       })();
     </script>
-    <link rel="stylesheet" href="styles.css?v=33" />
+    <link rel="stylesheet" href="styles.css?v=36" />
     <title>Counted — Blackjack Trainer</title>
   </head>
   <body>
@@ -223,7 +223,7 @@
         <section class="view flash-view" id="flash-view" data-view="flash" hidden>
           <div class="flash-heading">
             <div>
-              <p class="eyebrow">True count sprint</p>
+              <p class="eyebrow">True count sprint <span class="free-session-label" data-free-session="flash" hidden>1 free session</span></p>
               <h1>Rapid flash.</h1>
               <p>Keep the running count as cards fly, estimate the decks remaining, then call the true count at three checkpoints.</p>
             </div>
@@ -297,7 +297,7 @@
         <section class="view casino-view" id="casino-view" data-view="casino" hidden>
           <div class="casino-heading">
             <div>
-              <p class="eyebrow">Live simulation</p>
+              <p class="eyebrow">Live simulation <span class="free-session-label" data-free-session="casino" hidden>1 free session</span></p>
               <h1>Casino mode.</h1>
               <p>Play complete blackjack rounds while the dealer and up to three automatic players move through a live shoe.</p>
             </div>
@@ -391,7 +391,14 @@
             <article class="daily-goal-card">
               <div class="daily-ring" id="daily-ring"><strong id="daily-percent">0%</strong><span>today</span></div>
               <div><p class="eyebrow">Daily goal</p><h3><span id="daily-xp">0</span> / 100 XP</h3><p id="daily-goal-copy">Complete a short drill to start today’s run.</p></div>
-              <button data-nav="flash">Quick sprint <span>→</span></button>
+              <button id="quick-sprint" class="quick-sprint pro-locked" data-nav="flash" data-pro-feature aria-label="Quick sprint, requires Counted Pro">
+                <span>Quick sprint</span>
+                <span class="quick-sprint-pro" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none"><rect x="3.5" y="7" width="9" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  Pro
+                </span>
+                <span class="quick-sprint-arrow" aria-hidden="true">→</span>
+              </button>
             </article>
           </section>
 
@@ -487,10 +494,10 @@
       <div class="pro-mark" aria-hidden="true">★</div>
       <p class="eyebrow">Counted Pro</p>
       <h2 id="paywall-title">Train without limits.</h2>
-      <p id="paywall-copy">Keep the essentials free, then unlock every advanced drill with one simple annual subscription.</p>
+      <p id="paywall-copy">Unlock unlimited Rapid Flash + Casino Mode with Counted Pro for £2.99/year.</p>
       <div class="plan-grid" aria-label="Counted plans">
-        <section><span>Free</span><strong>Build your foundation</strong><ul><li>Hi-Lo lessons</li><li>20-card practice</li><li>Progress &amp; achievements</li></ul></section>
-        <section class="pro-plan"><span>Pro</span><strong>Build real fluency</strong><ul><li>40 &amp; 52-card Practice</li><li>Rapid Flash &amp; Casino</li><li>Future advanced modules</li></ul></section>
+        <section><span>Free</span><strong>Build your foundation</strong><ul><li>Hi-Lo + 20-card Practice</li><li id="free-plan-sessions">1 Flash + 1 Casino session</li><li>Progress &amp; achievements</li></ul></section>
+        <section class="pro-plan"><span>Pro</span><strong>Build real fluency</strong><ul><li>40 &amp; 52-card Practice</li><li>Unlimited Flash &amp; Casino</li><li>Future advanced modules</li></ul></section>
       </div>
       <button class="subscribe-button" id="subscribe-button" type="button"><span>Start Counted Pro</span><strong id="subscribe-price">£2.99/year</strong></button>
       <button class="restore-button" id="restore-purchases" type="button">Restore purchases</button>
@@ -514,6 +521,7 @@
       <p class="eyebrow">Shoe complete</p>
       <h2 id="casino-result-title">Table sharp.</h2>
       <p id="casino-result-copy">You held the count through every checkpoint.</p>
+      <p class="trial-result-copy" id="casino-trial-result" hidden>That was your free Casino session. Unlock unlimited Casino Mode + Rapid Flash with Counted Pro.</p>
       <div class="dialog-stats"><span><small>Count accuracy</small><strong id="casino-result-accuracy">0%</strong></span><span><small>Hand record</small><strong id="casino-result-record">0–0–0</strong></span></div>
       <div class="dialog-actions"><button class="secondary-button" id="casino-leave">Leave table</button><button class="primary-button" id="casino-again">New shoe <span>↻</span></button></div>
     </dialog>
@@ -577,13 +585,14 @@
       <p class="eyebrow">Sprint complete</p>
       <h2 id="flash-result-title">Count held.</h2>
       <p id="flash-result-copy">You converted the running count at speed.</p>
+      <p class="trial-result-copy" id="flash-trial-result" hidden>Nice work. That was your free Rapid Flash session. Unlock unlimited training with Counted Pro.</p>
       <div class="dialog-stats"><span><small>True count accuracy</small><strong id="flash-result-accuracy">0%</strong></span><span><small>Final running count</small><strong id="flash-result-count">0</strong></span></div>
       <div class="dialog-actions"><button class="secondary-button" id="flash-leave">Back to practice</button><button class="primary-button" id="flash-again">Sprint again <span>↻</span></button></div>
     </dialog>
 
     <div class="app-toast" id="app-toast" role="status" hidden><span id="app-toast-copy">Ready offline.</span><button id="app-toast-close" aria-label="Dismiss">×</button></div>
 
-    <script src="counted-core.js?v=33" defer></script>
-    <script src="app.js?v=33" defer></script>
+    <script src="counted-core.js?v=36" defer></script>
+    <script src="app.js?v=36" defer></script>
   </body>
 </html>

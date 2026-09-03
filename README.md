@@ -31,6 +31,19 @@ Then open [http://localhost:4173](http://localhost:4173).
 
 Progress is stored in browser local storage and stays on that device.
 
+## Free premium sessions
+
+Free users get one 30-card Rapid Flash sprint and one Casino shoe (up to its cut
+card, or until **End shoe**). Each allowance is recorded independently in
+`counted-progress-v1.freeSessionsUsed` when Start is pressed. Opening a mode or
+changing its settings does not spend it. Existing training history predates this
+offer and does not consume either allowance.
+
+An active session remains accessible when navigating away and back. Reloading or
+closing the app abandons that session; its saved use remains. These allowances
+use the same device-local storage as progress, with no account or cross-device
+sync. Pro users retain unlimited sessions and never spend the free allowances.
+
 ## Install directly on an iPhone with Xcode
 
 The iOS project packages the trainer inside the app, so the core experience works

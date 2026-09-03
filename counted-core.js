@@ -18,8 +18,16 @@
     return value === 1 ? "low" : value === 0 ? "neutral" : "high";
   }
 
-  function canAccessView(viewName, isPro) {
-    return isPro || !PRO_VIEWS.has(viewName);
+  function mergeFreeSessionsUsed(...sources) {
+    return Object.fromEntries([...PRO_VIEWS].map((mode) => [mode, sources.some((source) => Boolean(source?.[mode]))]));
+  }
+
+  function canStartProSession(viewName, isPro, freeSessionsUsed = {}) {
+    return Boolean(isPro) || (PRO_VIEWS.has(viewName) && !freeSessionsUsed[viewName]);
+  }
+
+  function canAccessView(viewName, isPro, freeSessionsUsed = {}, sessionActive = false) {
+    return !PRO_VIEWS.has(viewName) || sessionActive || canStartProSession(viewName, isPro, freeSessionsUsed);
   }
 
   function canUseSessionLength(length, isPro) {
@@ -46,6 +54,8 @@
     PRO_VIEWS,
     hiLoValue,
     hiLoGroup,
+    mergeFreeSessionsUsed,
+    canStartProSession,
     canAccessView,
     canUseSessionLength,
     normalizeSessionLength,
