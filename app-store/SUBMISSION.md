@@ -14,9 +14,14 @@ This file contains a working first-release listing. Text marked **INPUT REQUIRED
 - Price: `Free download`; Counted Pro is `£2.99/year`
 - Availability: iPhone only
 - Copyright: `© 2026 James Holland`
-- Privacy policy URL: **INPUT REQUIRED — publish `privacy.html` and paste its HTTPS URL**
-- Support URL: **INPUT REQUIRED — publish `support.html` and paste its HTTPS URL**
+- Privacy policy URL: `https://counted-blackjack-trainer.james-holland.chatgpt.site/trainer/privacy.html`
+- Support URL: `https://counted-blackjack-trainer.james-holland.chatgpt.site/trainer/support.html`
 - Support email: `counted.help@outlook.com`
+- Primary language: `English (UK)`
+- Bundle ID: `com.jamesholland.counted`
+- SKU: `counted-ios`
+
+Both HTTPS pages were verified without authentication on 3 September 2026. See `RELEASE_STATUS.md` for the current account and build blockers.
 
 ## In-App Purchase
 
@@ -29,10 +34,13 @@ This file contains a working first-release listing. Text marked **INPUT REQUIRED
 - Free tier: Hi-Lo lessons, basic-strategy charts, 20-card Practice, Progress and achievements
 - Pro tier: 40/52-card Practice, Rapid Flash, Casino and future advanced training modules
 - Free trial: none for version 1.0
+- English display name: `Counted Pro Annual`
+- English description: `Longer Practice, Rapid Flash and Casino training.`
+- App Review screenshot: `screenshots/6.9-inch/06-counted-pro.png`
 
-The same product is already defined in `ios/App/App/Counted.storekit` for local testing before App Store Connect exists. Recreate the identifiers exactly in App Store Connect after enrolment.
+The same product is defined in `ios/App/App/Counted.storekit` for local Xcode testing. The local definition does not create an App Store Connect product. Create the subscription with exactly this identifier and attach the first subscription to the app version submitted for review.
 
-The exact name cannot be reserved until the app record is created in App Store Connect. Similar apps already use “Counted,” so the descriptive suffix is intentional.
+The app record now uses “Counted: Blackjack Trainer” (Apple ID 6808117018). Listing text and artwork remain drafts while TestFlight feedback is gathered.
 
 ## Promotional text
 
@@ -58,6 +66,13 @@ PRIVATE AND OFFLINE
 Counted requires no in-app account, includes no advertising and contains no third-party analytics. Training progress stays on your device, and the core app works without an internet connection. Counted Pro purchases are securely handled by Apple.
 
 Counted is an educational training tool. It does not accept wagers, provide gambling services or promise positive results. Gambling involves risk; card counting does not guarantee winnings.
+
+COUNTED PRO
+
+Counted Pro is an optional annual subscription at £2.99 per year in the UK. Local prices may vary and are shown before purchase. Payment is charged to your Apple Account. The subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage or cancel your subscription in your App Store account settings.
+
+Privacy policy: https://counted-blackjack-trainer.james-holland.chatgpt.site/trainer/privacy.html
+Terms of Use (Apple standard EULA): https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
 
 ## Keywords
 
@@ -90,7 +105,9 @@ Do not describe it as a gambling service. Do disclose the casino/blackjack theme
 
 ## Screenshot plan
 
-Capture clean portrait screenshots from the Release build, with no debug overlays or placeholder support text:
+The existing upload set is in `marketing-screenshots/app-store-ready/`, ordered by filename. All six JPEGs were checked on 3 September 2026: 1320 × 2868 pixels, with no alpha channel. Retain the current approved artwork; these checks establish file compatibility, not a new native Release capture.
+
+Before submission, compare the screenshots with the final signed build. The original capture subjects are:
 
 1. Practice — visible card and three answer controls
 2. Casino Mode — player and dealer hands in progress
@@ -100,13 +117,13 @@ Capture clean portrait screenshots from the Release build, with no debug overlay
 
 Use Apple’s currently accepted 6.9-inch iPhone size first. Additional sizes can be scaled only where App Store Connect permits it.
 
-## Account-only finishing steps
+## TestFlight before launch
 
-1. Enrol in the Apple Developer Program.
-2. Create the App Store Connect app record and confirm the name.
-3. Add the privacy and support URLs, legal copyright owner and support email.
-4. Create the Counted Pro subscription using the identifiers above and add its App Review screenshot.
-5. Complete pricing, availability, content rights and age-rating forms.
-6. Build a signed archive with stable Xcode, upload it and run TestFlight checks.
-7. Add screenshots and the review notes from `REVIEW_NOTES.txt`.
-8. Opt out of iPhone-on-Mac and Apple Vision Pro availability unless those platforms are tested separately.
+The owner chose beta testing before App Store submission. App record, API access, paid-team signing, draft listing, review contact and Counted Pro metadata have been configured. A stable-Xcode build is uploaded and valid; internal testing is enabled and external TestFlight review is pending. See `RELEASE_STATUS.md` and `BETA_TESTING.md` for verified state and the testing checklist.
+
+1. Install build 1.0 (2) through TestFlight and check free training, native Pro purchase, restore, offline use and layout.
+2. Confirm the Paid Apps Agreement is signed so Apple sandbox purchase testing can work; resolve the subscription's remaining `MISSING_METADATA` status if product loading fails.
+3. Gather beta feedback and revise the app, screenshots and listing copy.
+4. Before production submission, complete age rating, privacy, content rights, price, launch territories and any outstanding tax/banking information.
+5. Verify the final signed build against the screenshots, attach the first subscription, and keep untested Mac and Apple Vision availability disabled.
+6. Submit a production version only after the owner asks to proceed following beta testing. Manual release is already selected.

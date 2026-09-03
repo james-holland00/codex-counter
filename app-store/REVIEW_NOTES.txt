@@ -9,7 +9,7 @@ Suggested review path:
 2. Tap +1, 0 or −1 to classify the displayed card.
 3. Tap Progress to confirm that progression, achievements and session history are available without a purchase.
 4. Tap Flash or Casino to view the Counted Pro purchase screen.
-5. Use the supplied App Review subscription account to purchase or restore Counted Pro, then open Flash and Casino from the bottom navigation.
+5. No developer-provided account credentials are needed. Purchase Counted Pro through Apple's review purchase environment, or restore an existing test purchase, then open Flash and Casino from the bottom navigation.
 6. Tap the arrow button to start either timed drill.
 7. Open Settings from the top-right gear to view or manage Counted Pro, sound, appearance, privacy and support.
 

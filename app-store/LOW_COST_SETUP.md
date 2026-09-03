@@ -18,19 +18,18 @@ The existing Sites project already provides managed HTTPS hosting at:
 
 `https://counted-blackjack-trainer.james-holland.chatgpt.site`
 
-Use these App Store Connect URLs after the site is made public:
+Use these App Store Connect URLs:
 
 - Privacy policy: `https://counted-blackjack-trainer.james-holland.chatgpt.site/trainer/privacy.html`
 - Support: `https://counted-blackjack-trainer.james-holland.chatgpt.site/trainer/support.html`
 
-The site is currently owner-only. Keep it private while the support-email marker is
-present. Publish it publicly only after the email is reserved and both URLs have been
-checked while signed out.
+The site is public. Both pages were checked without authentication on 3 September
+2026 and include the real support email. No domain or additional hosting purchase is needed.
 
 ## Minimum unavoidable launch cost
 
 - Development, local StoreKit testing, support email and hosting: £0
-- Apple Developer Program: defer until the release candidate and listing are ready
+- Apple Developer Program: membership purchased on 3 September 2026; paid-team activation still needs confirmation
 - Optional domain and custom-domain email: defer
 
 This preserves the quality-critical pieces — HTTPS, a real support channel, native
