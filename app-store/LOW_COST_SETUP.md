@@ -29,7 +29,7 @@ The site is public. Both pages were checked without authentication on 3 Septembe
 ## Minimum unavoidable launch cost
 
 - Development, local StoreKit testing, support email and hosting: £0
-- Apple Developer Program: membership purchased on 3 September 2026; paid-team activation still needs confirmation
+- Apple Developer Program: membership purchased on 3 September 2026; paid-team activation and signing verified
 - Optional domain and custom-domain email: defer
 
 This preserves the quality-critical pieces — HTTPS, a real support channel, native
