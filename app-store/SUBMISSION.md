@@ -119,7 +119,7 @@ Use Apple’s currently accepted 6.9-inch iPhone size first. Additional sizes ca
 
 ## TestFlight before launch
 
-The owner chose beta testing before App Store submission. App record, API access, paid-team signing, draft listing, review contact and Counted Pro metadata have been configured. A stable-Xcode build is uploaded and valid; internal testing is enabled and external TestFlight review is pending. See `RELEASE_STATUS.md` and `BETA_TESTING.md` for verified state and the testing checklist.
+The owner chose beta testing before App Store submission. App record, API access, paid-team signing, draft listing, review contact and Counted Pro metadata have been configured. Stable-Xcode build 1.0 (3) is uploaded, valid and enabled for internal testing. Its external review submission is blocked while build 1.0 (2) remains in beta review. See `RELEASE_STATUS.md` and `BETA_TESTING.md` for verified state and the testing checklist.
 
 1. Install the latest build of version 1.0 through TestFlight and check free training, native Pro purchase, restore, offline use and layout.
 2. The owner confirmed the Paid Apps Agreement is signed. Verify sandbox purchases and resolve the subscription's remaining `MISSING_METADATA` status if product loading fails.

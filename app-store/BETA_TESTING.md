@@ -6,14 +6,16 @@ The current priority is TestFlight feedback before App Store submission. Product
 
 Install through Apple's TestFlight invitation. Confirm the version and build in TestFlight before reporting an issue. Replacing an existing developer build may retain its local progress, so record whether the installation is fresh or an upgrade.
 
-1. Start a free 20-card Practice session. Check card values, scoring, end-of-session results and Progress.
-2. Read Learn and the basic-strategy charts. Flag any wording that a beginner cannot follow.
-3. Open the Pro screen from Flash or Casino. Check that it fits on screen, cannot scroll behind the dialog, and closes cleanly.
-4. Confirm the annual product loads a localized price. Purchase through TestFlight's test purchase sheet and check that 40/52-card Practice, Flash and Casino unlock. TestFlight uses Apple's sandbox; do not use a production App Store build for this check.
-5. Close and reopen the app. Confirm access persists. Test Restore Purchases; report the exact message if Apple cannot restore access.
-6. After a successful purchase, turn on Airplane Mode and check lessons, Practice, Pro drills and local progress. Record how long the app was offline if access changes.
-7. Check light and dark appearance, safe areas, buttons, keyboard entry and dialogs on the smallest and largest iPhones available to the beta group.
-8. Later, use a dedicated Apple sandbox account to verify accelerated subscription renewal, expiry, cancellation and restored access. A successful initial purchase does not establish expiry handling.
+1. Confirm **1.0 (3)** is installed. Start a free 20-card Practice session; check scoring, results and Progress. Read Learn and the basic-strategy charts.
+2. As a free user, confirm Rapid Flash and Casino each show “1 free session”. Open and leave each without pressing Start; neither allowance should be spent.
+3. Start Rapid Flash, finish all checkpoints and check its result message. Reopening/restarting should show the existing Pro paywall. Casino should still have its independent free session.
+4. Start Casino and play through the shoe, then check its result message and replay paywall. Also test the reverse order on a separate fresh test installation. Existing local history should not remove the new allowances.
+5. On a separate unused trial, start then navigate away and return to the same session. Refreshing/closing the app after Start abandons it and must not refund the allowance. Record whether the installation is fresh or an upgrade; do not delete real progress for testing.
+6. Check the Pro dialog fits without background scrolling. Purchase through TestFlight’s sandbox sheet and confirm both modes become unlimited and 40/52-card Practice unlocks. Pro users must see no free-session messaging. If product loading initially fails, reconnect and retry; a stale failure must not permanently block the purchase button.
+7. Close/reopen the app, confirm Pro persists, then test Restore Purchases. Report the exact visible error and whether Apple’s purchase sheet appeared. Browser simulations and successful native compilation do not establish a working Apple transaction.
+8. After a successful purchase, turn on Airplane Mode and check lessons, Practice, Pro drills and local progress. Record how long the app was offline if access changes.
+9. Check light/dark appearance, safe areas, buttons, keyboard and dialogs on the smallest/largest available iPhones.
+10. Later, use a dedicated Apple sandbox account to verify accelerated renewal, expiry, cancellation and restored access. A successful initial purchase does not establish expiry handling.
 
 ## Feedback
 
@@ -23,8 +25,8 @@ Prioritise incorrect counts or strategy, crashes, blocked purchases/restores, lo
 
 ## Distribution
 
-- `Counted Internal`: the owner's first install and purchase checks.
-- `Counted Beta`: external testers after Apple's TestFlight review. The initial share link is https://testflight.apple.com/join/VSdVdSyu , capped at 25 testers. It will not offer this build until approved.
+- `Counted Internal`: build 1.0 (3) is available for the owner’s install and purchase checks.
+- `Counted Beta`: build 3 is attached, but Apple currently blocks its review submission while build 2 is awaiting review. External testers require Apple’s TestFlight approval. The initial share link is https://testflight.apple.com/join/VSdVdSyu , capped at 25 testers. It will not offer this build until approved.
 - iPhone beta availability only; Mac and Apple Vision availability are disabled for both groups.
 - No third-party email invitations have been sent. Use a shareable invitation link once the external build is approved, or invite specific people when the owner supplies and authorizes their addresses.
 
